@@ -123,7 +123,7 @@ def _score_field(agent_val: Any, gt_val: Any, rule: dict) -> tuple[float, str]:
         # rule = {"type": "graded", "levels": [{"tol": 0.02, "score": 1.0}, ...]}
         # Levels are tried in order; first match wins.
         # Supports "tol" (relative) or "abs" (absolute).
-        # v3 (罗-1): gt_val must be parseable as a number; otherwise report
+        # v3: gt_val must be parseable as a number; otherwise report
         # rather than crash on `float(None)` / `float("abc")`.
         gt_num = parse_number(gt_val)
         if gt_num is None:
@@ -154,10 +154,10 @@ def _score_field(agent_val: Any, gt_val: Any, rule: dict) -> tuple[float, str]:
         # For dict answers where all keys must have matching values.
         # gt_val is the reference dict; agent_val must match every key.
         #
-        # v2 (#25, 魏-1 ≡ 王-3): dispatch by ground-truth value type.
+        # v2 (#25): dispatch by ground-truth value type.
         #   * numeric gt  → within_tolerance (uses rule["levels"] / abs / tol)
         #   * string gt   → match_string as before
-        # v3 (吴-2 / 罗-1):
+        # v3:
         #   * bool gt is NOT numeric — Python's isinstance(True, int) is True,
         #     which pre-v3 sent it into the numeric branch and crashed on
         #     float(None) (parse_number returns None for bool).
@@ -172,7 +172,7 @@ def _score_field(agent_val: Any, gt_val: Any, rule: dict) -> tuple[float, str]:
         per_key_scores: list[float] = []
         for k, v_gt in gt_val.items():
             v_agent = agent_val.get(k)
-            # v3 (吴-2 / 罗-1): strict numeric detection.
+            # v3: strict numeric detection.
             is_numeric_gt = (
                 isinstance(v_gt, (int, float)) and not isinstance(v_gt, bool)
             )
@@ -209,7 +209,7 @@ def _score_field(agent_val: Any, gt_val: Any, rule: dict) -> tuple[float, str]:
                         1.0 if a_num is not None and a_num == gt_num else 0.0
                     )
             elif isinstance(v_gt, bool):
-                # v3 (罗-1): bool → boolean equality, not string similarity.
+                # v3: bool → boolean equality, not string similarity.
                 per_key_scores.append(1.0 if v_agent == v_gt else 0.0)
             else:
                 # String / mixed — fall through to the pre-v2 SequenceMatcher path.
@@ -236,7 +236,7 @@ def _score_field(agent_val: Any, gt_val: Any, rule: dict) -> tuple[float, str]:
             return 0.0, "field absent — cannot verify no-leakage"
         forbidden = rule.get("forbidden", [])
         s = str(agent_val).lower()
-        # v4 (罗-1): use word-boundary regex for ASCII tokens to avoid false
+        # v4: use word-boundary regex for ASCII tokens to avoid false
         # positives (e.g. "china_sales_na" matching forbidden "na"). CJK tokens
         # lack word boundaries, so retain substring matching for them.
         import re as _re
@@ -265,7 +265,7 @@ def _score_field(agent_val: Any, gt_val: Any, rule: dict) -> tuple[float, str]:
         from framework.normalize import normalize_string
         import re as _re
         s = normalize_string(str(agent_val)) if agent_val is not None else ""
-        # v2 (#26, 魏-11): normalize_string turns "N/A" into "n a" (slash → space),
+        # v2 (#26): normalize_string turns "N/A" into "n a" (slash → space),
         # but the answer text often carries the naked "NA" which normalizes to
         # "na". Build a companion whitespace-stripped view so tokens that lost
         # their separator can still match. Applied on BOTH sides so a keyword
@@ -405,7 +405,7 @@ def score_task(
         if weight <= 0:
             continue
 
-        # v3.3 (吴‑4): an undeclared scoring rule used to default silently to
+        # v3.3: an undeclared scoring rule used to default silently to
         # exact_string, masking authoring mistakes as "wrong answers". Now it is
         # a loud CONFIG_ERROR zero so the pre-flight validator stays meaningful.
         rule = scoring.get(field_key)
@@ -470,7 +470,7 @@ def _aggregate_by_capability(details: list[FieldResult]) -> dict[str, float]:
 
 
 def _load_json(path: str | Path) -> dict:
-    """v3.3 (罗‑4): load JSON tolerantly. Python's stdlib accepts bare
+    """v3.3 : load JSON tolerantly. Python's stdlib accepts bare
     ``NaN`` / ``Infinity`` / ``-Infinity`` literals and turns them into floats,
     whereupon ``nan != anything`` makes EVERY numeric comparison fail and zeros
     the whole trial even though its other fields were correct. Mapping these
@@ -485,7 +485,7 @@ def _load_json(path: str | Path) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Groundtruth consistency check (v2 #30, 魏-8)
+# Groundtruth consistency check (v2 #30, )
 # ---------------------------------------------------------------------------
 def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
     """Cross-check ``values`` against inlined ``scoring[k].gt``.
@@ -495,11 +495,11 @@ def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
     nothing enforces agreement, the two blocks can silently drift apart —
     typo-prone and misleading to anyone auditing the groundtruth.
 
-    v3 (李-1): also catches ``scoring[k].type`` typos (e.g. ``exect_number``,
+    v3 : also catches ``scoring[k].type`` typos (e.g. ``exect_number``,
     ``bools``, ``containss``) — these would silently score 0 at runtime and
     look like model failure.
 
-    v4 (吴-4): adds weights↔scoring key-set cross-validation and mandatory
+    v4 : adds weights↔scoring key-set cross-validation and mandatory
     field checks (levels for graded/threshold rules, gt for exact_* rules).
     Prevents silent score-zeroing caused by authoring mistakes.
 
@@ -512,7 +512,7 @@ def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
     scoring = groundtruth.get("scoring", {}) or {}
     weights = groundtruth.get("weights", {}) or {}
 
-    # v4 (吴-4): weights ↔ scoring key-set cross-validation.
+    # v4: weights ↔ scoring key-set cross-validation.
     scoring_keys = set(scoring.keys())
     weights_keys = set(weights.keys())
     for k in weights_keys - scoring_keys:
@@ -521,7 +521,7 @@ def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
             "this field will silently score 0 (no rule to evaluate)."
         )
 
-    # v4 (吴-4): per-rule mandatory field checks.
+    # v4: per-rule mandatory field checks.
     _NEEDS_LEVELS = {"graded", "min_threshold", "max_threshold"}
     _NEEDS_GT = {"exact_number", "exact_string", "list_set", "list_ordered",
                  "object_keys_match", "bool"}
@@ -529,7 +529,7 @@ def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
     for field_key, rule in scoring.items():
         if not isinstance(rule, dict):
             continue
-        # v3 (李-1): rule_type typo check.
+        # v3: rule_type typo check.
         rtype = rule.get("type", "exact_string")
         if rtype not in _KNOWN_RULE_TYPES:
             problems.append(
@@ -537,7 +537,7 @@ def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
                 f"(known: {sorted(_KNOWN_RULE_TYPES)})"
             )
 
-        # v4 (吴-4): levels mandatory for graded/threshold rules.
+        # v4: levels mandatory for graded/threshold rules.
         if rtype in _NEEDS_LEVELS:
             levels = rule.get("levels")
             if not levels:
@@ -558,14 +558,14 @@ def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
                             "is missing 'max' key — will raise KeyError at runtime."
                         )
 
-        # v4 (吴-4): gt mandatory for exact/bool/list rules.
+        # v4: gt mandatory for exact/bool/list rules.
         if rtype in _NEEDS_GT and "gt" not in rule:
             problems.append(
                 f"scoring[{field_key!r}] type={rtype!r} requires 'gt' "
                 "but none found — this field cannot be evaluated."
             )
 
-        # v3.3 (吴‑4): enum / accept_set must declare their candidate lists;
+        # v3.3: enum / accept_set must declare their candidate lists;
         # an omitted list previously turned every answer into a silent 0.
         if rtype == "enum" and not rule.get("allowed"):
             problems.append(
@@ -577,7 +577,7 @@ def validate_groundtruth_consistency(groundtruth: dict) -> list[str]:
                 "'accept' list."
             )
 
-        # v3.3 (吴‑4): threshold-band monotonicity — catch inverted reward
+        # v3.3: threshold-band monotonicity — catch inverted reward
         # orderings that would silently flip who earns which tier.
         _lvl_seq = rule.get("levels")
         if isinstance(_lvl_seq, list) and len(_lvl_seq) >= 2:

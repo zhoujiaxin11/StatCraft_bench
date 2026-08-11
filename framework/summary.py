@@ -1,7 +1,7 @@
 """
 framework/summary
 =================
-Render a markdown overview across one task's trial index (v3.3, Hou-5).
+Render a markdown overview across one task's trial index (v3.3).
 
 ``runner.py`` already appends a JSONL line per finished trial to
 ``<task>/trials/index.jsonl``. This module is the missing *read* side: it rolls

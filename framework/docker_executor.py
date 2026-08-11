@@ -56,14 +56,14 @@ class DockerExecutor:
         self.timeout = timeout_per_step
         self.allow_network = allow_network
         self.read_only_rootfs = read_only_rootfs
-        # v2 (#6, 李-3): optional persistence of code + output for post-mortem audit.
+        # v2 (#6): optional persistence of code + output for post-mortem audit.
         self.log_dir = Path(log_dir) if log_dir else None
         if self.log_dir is not None:
             self.log_dir.mkdir(parents=True, exist_ok=True)
         # Unique per-run container name to allow concurrent trials
         self.container_name = f"bench_{uuid.uuid4().hex[:12]}"
         self._started = False
-        # v3.3 (侯-3): bench.trial=<tag> once setup() runs; lets batch.py reap
+        # v3.3: bench.trial=<tag> once setup() runs; lets batch.py reap
         # the exact container after a batch-level timeout instead of leaking it.
         self.trial_label: str | None = None
 
@@ -81,7 +81,7 @@ class DockerExecutor:
             "--security-opt", "no-new-privileges",
             "--pids-limit", "256",
         ]
-        # v3.3 (魏-3 / 侯-3): propagate host-seeded randomness + a trial tag so
+        # v3.3: propagate host-seeded randomness + a trial tag so
         # agent code inside the container reproduces deterministically AND every
         # container carries a label for precise post-timeout reaping by batch.py.
         # PYTHONHASHSEED must be present BEFORE the python interpreter starts, so
@@ -182,7 +182,7 @@ class DockerExecutor:
         # Write into workspace/ on host — container sees it at /workspace/
         script_name = f"_step_{int(time.time() * 1000)}_{uuid.uuid4().hex[:6]}.py"
         script_path = self.workspace / script_name
-        # v3.3 (魏-3): prepend a tiny seeding prologue so ANY random/numpy usage
+        # v3.3: prepend a tiny seeding prologue so ANY random/numpy usage
         # in agent-generated code reproduces deterministically under BENCH_SEED.
         seeded_code = _seed_prologue() + "\n" + code
         script_path.write_text(seeded_code, encoding="utf-8")
@@ -206,7 +206,7 @@ class DockerExecutor:
             ok = proc.returncode == 0
             out_stripped = output.strip()
         except subprocess.TimeoutExpired:
-            # v3.3 (吴-5): kill ONLY this step's process via its recorded PID.
+            # v3.3: kill ONLY this step's process via its recorded PID.
             # Never `pkill -f <name>` — concurrent timed-out zombies share the
             # "_step_*" suffix and would be killed together.
             self._kill_pid_in_container(pidfile)
@@ -234,7 +234,7 @@ class DockerExecutor:
         return ok, out_stripped
 
     def _kill_pid_in_container(self, pidfile: str) -> None:
-        """v3.3 (吴‑5): best-effort SIGTERM→SIGKILL of ONLY the PID recorded in
+        """v3.3 : best-effort SIGTERM→SIGKILL of ONLY the PID recorded in
         ``pidfile``. Never pattern-matches script names (which miskill siblings)."""
         for sig in ("TERM", "KILL"):
             try:
@@ -293,7 +293,7 @@ def check_docker_available() -> bool:
 def image_exists(image: str, retries: int = 5, delay: float = 0.7) -> bool:
     """Return True if the given image tag exists locally.
 
-    v4 (侯‑1): tolerate Docker CLI concurrency jitter by retrying with backoff,
+    v4 : tolerate Docker CLI concurrency jitter by retrying with backoff,
     catching TimeoutExpired/OSError that previously crashed callers.
     v3.3 补强: jitter 也常以 **非异常的 rc≠0** 出现（而非仅 timeout）。
       原实现一遇非零就立刻返 False 不再重试 —— 实测在容器频繁启停的启动窗口里偶发假阴，

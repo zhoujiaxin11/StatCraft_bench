@@ -64,7 +64,7 @@ def load_task_config(task_dir: Path) -> dict:
     'wall_timeout'.
     All runner code should read from this instead of hardcoding values.
 
-    v4 (魏-4): ``wall_timeout`` is now surfaced and consumed by the runner
+    v4 : ``wall_timeout`` is now surfaced and consumed by the runner
     as a real wall-clock watchdog. If not specified, defaults to
     max_turns × timeout_per_step + 300 (generous safety margin).
     """
@@ -75,7 +75,7 @@ def load_task_config(task_dir: Path) -> dict:
     env = cfg.get("environment", {})
     max_turns = int(resources.get("max_turns", 50))
     timeout_per_step = int(resources.get("timeout_per_step", 180))
-    # v4 (魏-4): wall_timeout replaces the old ghost "timeout" field.
+    # v4: wall_timeout replaces the old ghost "timeout" field.
     # Falls back to timeout (legacy) then derived default.
     wall_timeout = int(resources.get("wall_timeout",
                        resources.get("timeout",
@@ -227,7 +227,7 @@ def generate_report(
     # 3. OUTPUT FILES
     # -----------------------------
     header("2. OUTPUT FILES")
-    # v2 (#20, 李-4): drive the check purely from task.toml required_outputs.
+    # v2 (#20): drive the check purely from task.toml required_outputs.
     # No hardcoded baseline — 131 doesn't declare predictions.csv, so the old
     # code printed a bogus [MISSING] for every 131 report.
     check_paths: list[str] = []
@@ -253,7 +253,7 @@ def generate_report(
         else:
             lines.append(f"  [MISSING  ] {rel}")
 
-    # v3 (吴-5 / 魏-5): surface missing_outputs and the run's status so
+    # v3: surface missing_outputs and the run's status so
     # per-artifact scoring is visible in the report.
     missing_outputs = score_result.get("missing_outputs") or []
     status = score_result.get("status")
@@ -312,7 +312,7 @@ def generate_report(
         lines.append(
             f"  Weight:   {pytd.get('earned_weight', 0)} / {pytd.get('total_weight', 0)}"
         )
-        # v3 (李-2): per-test roster.
+        # v3: per-test roster.
         per_test = pytd.get("per_test") or []
         if per_test:
             lines.append("")
@@ -323,7 +323,7 @@ def generate_report(
                 status = t.get("status", "?")
                 marker = " " if status == "PASSED" else ("X" if status == "FAILED" else "~")
                 lines.append(f"  {marker} {name:<58}  {status}")
-        # v3 (吴-1): weight-map health.
+        # v3: weight-map health.
         unmatched = pytd.get("unmatched_names") or []
         unused = pytd.get("unused_weight_keys") or []
         if unmatched:
@@ -469,7 +469,7 @@ def run_agent(
       * #6  exec logs (code + full output) persist under ``<trial>/exec_logs``.
       * #13 returns ``terminated_by`` for score.json._meta.
 
-    v3 (王-1): ``temperature`` (CLI-driven) overrides models.yaml when given.
+    v3 : ``temperature`` (CLI-driven) overrides models.yaml when given.
         Needed for vendors like Kimi-K2.6 whose gateway rejects temperature=0.
     """
     if api_base and api_key:
@@ -485,7 +485,7 @@ def run_agent(
     if max_tokens is not None:
         cfg.max_tokens = max_tokens  # CLI override wins over models.yaml (v2 #4)
     if temperature is not None:
-        cfg.temperature = float(temperature)  # v3 (王-1)
+        cfg.temperature = float(temperature)  # v3
 
     task_cfg = load_task_config(task_dir)
     max_turns = task_cfg["max_turns"]
@@ -546,9 +546,9 @@ def run_agent(
 # v2 (#18): status vocabulary carried in every score.json.  aggregate.py filters
 # on this to separate ability signal from infrastructure noise (see #28).
 # v3 additions:
-#   * STATUS_EXECUTOR_CRASH (李-5): host/docker executor blew up mid-block —
+# * STATUS_EXECUTOR_CRASH: host/docker executor blew up mid-block —
 #     infra failure, not a model signal.
-#   * STATUS_NO_PROGRESS / STATUS_STUCK_LOOP (侯-3): circuit-breaker signals —
+# * STATUS_NO_PROGRESS / STATUS_STUCK_LOOP: circuit-breaker signals —
 #     model failed to advance or emitted identical replies. Model_fail bucket.
 STATUS_OK = "ok"
 STATUS_API_ERROR = "api_error"
@@ -572,13 +572,13 @@ def score_run(
     """Score a completed run: factoid + optional pytest.
 
     v2 changes:
-      * #15 罗-7: outcome.json is only required when ``factoid_alpha > 0``;
+      * #15: outcome.json is only required when ``factoid_alpha > 0``;
         artifact-only tasks (pytest layer alone) validate ``required_outputs.files``.
-      * #16 罗-5: scorer exceptions are caught and reported as ``scorer_error``
+      * #16: scorer exceptions are caught and reported as ``scorer_error``
         rather than aborting the runner.
       * #18: every return path stamps a ``status`` field (STATUS_*).
 
-    v3 (吴-5 / 魏-5): missing / empty required_outputs no longer zero the
+    v3 : missing / empty required_outputs no longer zero the
     entire trial. Only outcome.json (when the factoid layer is active) forces
     an early return; other missing artifacts drop their dependent tests to 0
     via the pytest layer and are surfaced under ``missing_outputs``.
@@ -613,7 +613,7 @@ def score_run(
 
     answer_path = workspace / "outcome.json"
 
-    # v3 (吴-5 / 魏-5): only outcome.json (with factoid active) forces an
+    # v3: only outcome.json (with factoid active) forces an
     # early return; other missing outputs are recorded and scoring proceeds
     # so pytest can grade the artifacts that DO exist.
     missing_outputs = sorted(set(missing) | set(empty))
@@ -631,7 +631,7 @@ def score_run(
         }
 
     # If factoid layer is active, outcome.json must parse as JSON.
-    # v3.3 (Luo-4): tolerate bare NaN/Infinity literals by mapping them to null
+    # v3.3: tolerate bare NaN/Infinity literals by mapping them to null
     # (via parse_constant) instead of treating a mostly-correct file with one
     # non-standard numeric token as an unparseable failure. Genuinely malformed
     # structure still raises JSONDecodeError and keeps the bad_json status.
@@ -666,7 +666,7 @@ def score_run(
         pytest_res = run_pytest(test_dir, workspace) if test_dir.exists() else None
 
         if pytest_res is not None:
-            # v4 (吴-1): always route through combined_score() so its internal
+            # v4: always route through combined_score() so its internal
             # three-branch logic (scored / no_weight_map / pytest_broken) is
             # exercised. Pre-v4, empty per_test bypassed combined_score entirely,
             # making the pytest_broken branch dead code.
@@ -695,7 +695,7 @@ def score_run(
         }
 
     result["status"] = STATUS_OK
-    # v3 (吴-5 / 魏-5): always stamp missing_outputs so reports can surface
+    # v3: always stamp missing_outputs so reports can surface
     # partial-artifact runs even when the factoid layer produced a score.
     result["missing_outputs"] = missing_outputs
     return result
@@ -705,7 +705,7 @@ def score_run(
 # CI: oracle must pass
 # ---------------------------------------------------------------------------
 def _write_fail_score(trial_root: Path, status: str, error: str) -> None:
-    """v4 (侯-2): persist a minimal score.json for early-exit failures so that
+    """v4 : persist a minimal score.json for early-exit failures so that
     the trial directory is never empty on disk."""
     import json as _json
     payload = {
@@ -731,7 +731,7 @@ def check_oracle(
 ) -> bool:
     """Sanity: solution/solve.py must score >= 0.99 (i.e., near-perfect).
 
-    v2 (#30, 魏-8): also cross-checks that ``values`` and ``scoring[k].gt`` agree.
+    v2 (#30): also cross-checks that ``values`` and ``scoring[k].gt`` agree.
     """
     workspace = prepare_workspace(task_dir, trial_root)
     run_oracle(task_dir, workspace, image=image)
@@ -801,7 +801,7 @@ def main():
     parser.add_argument(
         "--trial-tag",
         default=None,
-        help="v3.3 (Hou-3 / Wei-3): stamp 'bench.trial=<tag>' on every docker "
+        help="v3.3 : stamp 'bench.trial=<tag>' on every docker "
              "container so batch.py can reap THIS exact container after a "
              "batch-level timeout, instead of leaking it.",
     )
@@ -809,14 +809,14 @@ def main():
     parser.add_argument("--max-tokens", type=int, default=None,
                         help="Override the LLM max_tokens (default: models.yaml / vendor default)")
     parser.add_argument("--temperature", type=float, default=None,
-                        help="Override the LLM temperature (v3 王-1). "
+                        help="Override the LLM temperature (v3 ). "
                              "Needed for vendors that reject temperature=0.")
     args = parser.parse_args()
 
     task_dir = Path(args.task).resolve()
     gt_dir = Path(args.groundtruth_dir).resolve()
 
-    # v4 (侯-2): compute trial_root and mkdir BEFORE image/Docker checks,
+    # v4: compute trial_root and mkdir BEFORE image/Docker checks,
     # so that early failures leave a trace on disk.
     task_id = _read_task_id(task_dir)
     tag = args.agent if args.agent == "oracle" else f"{args.model}_seed{args.seed}"
@@ -888,7 +888,7 @@ def main():
     terminated_by = None
     usage_summary = None
 
-    # v4 (魏-4): wall-clock watchdog. If the task declares wall_timeout, we
+    # v4: wall-clock watchdog. If the task declares wall_timeout, we
     # enforce it via signal.alarm (Unix) or threading fallback so a stuck agent
     # cannot run indefinitely and block the batch pool.
     task_cfg = load_task_config(task_dir)
@@ -904,13 +904,13 @@ def main():
         signal.signal(signal.SIGALRM, _watchdog_handler)
         signal.alarm(wall_timeout)
 
-    # v4 (魏-3): inject seed into random sources so multi-seed runs produce
+    # v4: inject seed into random sources so multi-seed runs produce
     # independent samples. Without this, temperature=0 + no seed injection
     # gives identical trials across all seeds, making std≈0 / CI fake-narrow.
     import random as _rng
     _rng.seed(args.seed)
     # v3.3 hotfix: PIN Python hash randomization to a CONSTANT instead of tying it
-    # to args.seed. Tying it to the trial-seed (the earlier v4 魏‑3 wiring) made any
+    # to args.seed. Tying it to the trial-seed (the earlier v4 wiring) made any
     # participant/reference code that iterates dicts/sets produce DIFFERENT results
     # per seed — not sampler noise, but arbitrary algorithmic reshuffling that flipped
     # e.g. causal control-group selection and swung DID estimates wildly across seeds.
@@ -922,7 +922,7 @@ def main():
         _np.random.seed(args.seed)
     except ImportError:
         pass
-    # v3.3 (Wei-3 / Hou-3): expose per-trial identity for BOTH executors.
+    # v3.3: expose per-trial identity for BOTH executors.
     # SubprocessExecutor inherits these env vars directly; DockerExecutor turns
     # them into `-e ...=` on its long-lived container AND a `--label bench.trial`
     # that batch.py uses to reap exactly this container when it kills our proc.
@@ -966,7 +966,7 @@ def main():
     result = score_run(task_id, workspace, task_dir, gt_dir, task_cfg=task_cfg_for_scoring)
     # v2 (#18, #13, #3): stamp metadata for downstream aggregation & audit.
     #
-    # v4 (侯-6): FIELD SEMANTICS (authoritative documentation):
+    # v4: FIELD SEMANTICS (authoritative documentation):
     #   - result["status"] is the AUTHORITATIVE scoring field. aggregate.py
     #     uses ONLY this to classify trials into buckets (ok/infra/model_fail).
     #     It answers: "did we get a valid score from this trial?"
@@ -993,7 +993,7 @@ def main():
     elif terminated_by == "executor_crash" and result.get("status") in (
         None, "no_output", "scorer_error"
     ):
-        # v4 (吴-2): removed "ok" from this whitelist. If score_run already
+        # v4: removed "ok" from this whitelist. If score_run already
         # succeeded and returned status="ok", the trial produced a valid score
         # — don't overwrite it with executor_crash just because the agent had
         # a late-stage infra fault after outcome.json was already written.
@@ -1001,7 +1001,7 @@ def main():
     elif terminated_by in ("stuck_loop", "no_progress") and result.get("status") in (
         None, "no_output"
     ):
-        # v3/v3.3 (Wu-2): circuit-breaker termination where NO valid score was
+        # v3/v3.3: circuit-breaker termination where NO valid score was
         # produced yet -> model_fail (counts as 0, not infra-dropped). If
         # score_run DID return status="ok" (outcome.json validly written), it is
         # preserved here too — same protection extended as for executor_crash,
@@ -1017,7 +1017,7 @@ def main():
         json.dump(result, f, ensure_ascii=False, indent=2)
     print(f"[runner] score={result.get('combined_score', 0.0):.4f}  → {out_path}")
 
-    # v4 (侯-5): append a one-line summary to trials/index.jsonl so batch
+    # v4: append a one-line summary to trials/index.jsonl so batch
     # results can be glanced without traversing per-trial dirs.
     try:
         index_path = trial_root.parent / "index.jsonl"

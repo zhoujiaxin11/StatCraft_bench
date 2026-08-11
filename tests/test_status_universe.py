@@ -1,7 +1,7 @@
 """v3.3 守门单测：状态词表一致性 & 新 infra 状态登记防退化。
 
 覆盖点：
-  - 吴玄炀‑3 / 侯雅婷‑2 / 李昊洋‑2 的配套约束——新引入的 infra 状态
+  - 新引入的 infra 状态
     (image_missing/docker_unavailable/bad_io/wall_timeout) 必须留在 INFRA_STATUSES，
     否则 aggregate._bucket 会把基础设施失败当成模型真实能力计入均值。
   - bad_json 应归 model_fail（agent 写坏 JSON 是模型过错），与 OSError→bad_io(infra) 区分。
@@ -39,7 +39,7 @@ def test_new_infra_statuses_registered():
 
 
 def test_bad_json_is_model_fail_not_infra():
-    # 李昊洋‑2 路由一致性：JSONDecodeError→bad_json 计责；OSError→bad_io 不计责
+    # 李昊 路由一致性：JSONDecodeError→bad_json 计责；OSError→bad_io 不计责
     b = _statuses()["bucket"]
     assert b("bad_json") == "model_fail"
     assert b("bad_io") == "infra"
@@ -58,7 +58,7 @@ def test_ok_and_none_bucket_as_ok():
 
 
 def test_unknown_status_warns_and_does_not_silently_pass_as_ok():
-    # 吴玄炀‑3 核心诉求：未知 status 必须显式告警并保守丢弃，绝不再静默走 ok
+    # 核心诉求:未知 status 必须显式告警并保守丢弃，绝不再静默走 ok
     b = _statuses()["bucket"]
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")

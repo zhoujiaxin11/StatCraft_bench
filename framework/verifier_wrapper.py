@@ -45,9 +45,9 @@ class PytestResult:
     skipped: int
     per_test: list[dict]  # [{"name": ..., "status": "PASSED|FAILED|SKIPPED|ERROR|XFAIL|XPASS"}]
     raw_output: str
-    # v2 (#21, 魏-3a+吴-2): count of ERROR / XFAIL / XPASS outcomes.
+    # v2 (#21): count of ERROR / XFAIL / XPASS outcomes.
     errored: int = 0
-    # v2 (#22, 魏-3b+吴-3): True when the run produced NEITHER a PASSED nor a
+    # v2 (#22): True when the run produced NEITHER a PASSED nor a
     # FAILED line — i.e. nothing decidable to score against. Treated as
     # "no pytest layer", not as "the model earned 0".
     no_executable_tests: bool = False
@@ -60,14 +60,14 @@ def run_pytest(test_dir: Path, workspace: Path, timeout: int = 300) -> PytestRes
     # v3.3 hotfix: resolve() to an ABSOLUTE path — we chdir into workspace below,
     # so a relative ``tasks/<id>/tests`` argument silently became unfindable there
     # ("ERROR: file or directory not found"), yielding zero collection every time.
-    # That zero-collection tripped the王‑2 pytest_broken_no_collection branch and
+    # That zero-collection tripped the pytest_broken_no_collection branch and
     # capped combined_score at α*factoid (=≤0.90), making the >=0.99 self-check gate
     # structurally unreachable regardless of answer quality.
     cmd = [sys.executable, "-m", "pytest", "-v", "--no-header",
            "--rootdir", str(workspace),
            "-p", "no:cacheprovider",
            str((Path.cwd() / test_dir).resolve())]
-    # v2 (#24, 魏-4): thread BENCH_WORKSPACE through to the pytest subprocess so
+    # v2 (#24): thread BENCH_WORKSPACE through to the pytest subprocess so
     # test fixtures that read it don't silently fall back to cwd (which happens
     # to equal workspace TODAY but is a fragile coincidence).
     env = {**os.environ, "BENCH_WORKSPACE": str(workspace)}
@@ -135,11 +135,11 @@ def weighted_pytest_score(
 ) -> tuple[float, float, float, dict]:
     """Apply weight_map to per-test results; only PASSED earns credit.
 
-    v2 (#23, 吴-4 + 魏-5): unregistered tests default to weight **0** and emit
+    v2 (#23): unregistered tests default to weight **0** and emit
     a warning. Pre-v2 the default was 1.0, which silently diluted intended
     weights whenever the author added a test without updating the map.
 
-    v3 (吴-1): parametrized tests (nodeid ``test_foo[case1]``) are matched by
+    v3 : parametrized tests (nodeid ``test_foo[case1]``) are matched by
     stripping the ``[...]`` suffix and splitting the base weight evenly across
     all parametrized instances. Pre-v3 both instances silently fell to weight
     0 while the base name in the weight_map went un-consumed — a full family
@@ -152,7 +152,7 @@ def weighted_pytest_score(
         matched_weight_keys : list[str]  # weight_map keys that were used
         unused_weight_keys  : list[str]  # weight_map keys that matched nothing
     """
-    # v3 (吴-1): group per_test by function-base name (nodeid without [params]).
+    # v3: group per_test by function-base name (nodeid without [params]).
     def _base(name: str) -> str:
         return name.split("[", 1)[0] if "[" in name else name
 
@@ -175,7 +175,7 @@ def weighted_pytest_score(
             matched_weight_keys.add(name)
             matched_names.append(name)
         elif base in weight_map and base_counts.get(base, 0) > 0:
-            # v3 (吴-1): split base weight across parametrized instances.
+            # v3: split base weight across parametrized instances.
             w = float(weight_map[base]) / base_counts[base]
             matched_weight_keys.add(base)
             matched_names.append(name)
@@ -281,7 +281,7 @@ def combined_score(
     unacceptable veto validity can be checked here instead of only at
     aggregation time.
 
-    v2 (#22, 魏-3b + 吴-3): the decision "is there a pytest layer" is now made
+    v2 (#22): the decision "is there a pytest layer" is now made
     by looking for ≥1 PASSED-or-FAILED line, not by whether per_test is
     non-empty. All-SKIP or all-ERROR runs (== no decidable tests) treat the
     pytest layer as absent (effective_alpha = 1.0) instead of silently
@@ -291,12 +291,12 @@ def combined_score(
     (what actually got applied) so the reader can tell "α=1.0 because no
     pytest configured" from "α=0.9 as configured".
 
-    v3 (吴-4): "pytest layer broken" (per_test collected but all ERROR/SKIP
+    v3 : "pytest layer broken" (per_test collected but all ERROR/SKIP
     AND a weight_map exists) now scores pytest_score=0 with
     effective_alpha=declared_alpha, instead of falling back to α=1.0. Pre-v3,
     breaking conftest would silently boost the score.
 
-    v3 (李-2): ``pytest_details`` now includes the per-test roster
+    v3 : ``pytest_details`` now includes the per-test roster
     (``per_test``: list of {name, status}) and weight-matching diagnostics so
     reports and downstream tooling can see which tests earned/dropped weight.
     """
@@ -327,7 +327,7 @@ def combined_score(
         earned, total = 0.0, 0.0
         if not has_per_test:
             if has_weight_map:
-                # v4 (王-2): task declares a pytest layer (weight_map exists)
+                # v4: task declares a pytest layer (weight_map exists)
                 # but collection yielded zero lines — treat as broken, not
                 # absent. Without this, a completely broken test suite would
                 # give effective_alpha=1.0 and silently boost the score.
@@ -345,7 +345,7 @@ def combined_score(
             effective_alpha = 1.0
             pytest_status = "no_weight_map"
         else:
-            # v3 (吴-4): per_test collected, weight_map declared, but no
+            # v3: per_test collected, weight_map declared, but no
             # PASSED/FAILED line — pytest layer is broken (conftest error,
             # collection failure, all-SKIP). Score as 0 with declared α so
             # the model does not benefit from a broken artifact layer.
@@ -371,12 +371,12 @@ def combined_score(
             "errored": pytest_result.errored,
             "earned_weight": round(earned, 2),
             "total_weight": round(total, 2),
-            # v3 (李-2): per-test roster (name + status only, no raw_output).
+            # v3: per-test roster (name + status only, no raw_output).
             "per_test": [
                 {"name": t["name"], "status": t["status"]}
                 for t in pytest_result.per_test
             ],
-            # v3 (吴-1): weight-matching diagnostics.
+            # v3: weight-matching diagnostics.
             "matched_names": weight_details.get("matched_names", []),
             "unmatched_names": weight_details.get("unmatched_names", []),
             "matched_weight_keys": weight_details.get("matched_weight_keys", []),

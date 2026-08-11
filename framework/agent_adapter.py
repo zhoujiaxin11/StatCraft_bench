@@ -14,18 +14,18 @@ Design sources
 
 v2 notes (质检版修订)
 --------------------
-  * #1 侯-P0-1: retry with exponential backoff (deadline-aware)
-  * #2 侯-P0-2: verify workspace/outcome.json before accepting [FINAL_ANSWER]
-  * #3 侯-P0-3: ChatResponse dataclass carrying usage / stop_reason
-  * #4 侯-P0-4: max_tokens defaults to None (vendor default)
-  * #5 罗-4:  trajectory streamed to disk on every event
-  * #6 李-3:  trajectory records full tool output + exec_logs persistence
-  * #7 侯-协议-A: three-level fallback code-block extraction
-  * #8 王-1:  optional MAX_BLOCKS_PER_TURN cap (default: unlimited)
-  * #9 侯-协议-C: [FINAL_ANSWER] must be on its own line, outside code fences
-  * #10-12 侯-Prompt-1/2/3: system prompt aligned with the above
-  * #13 罗-1:  run() returns terminated_by
-  * #14 王-2:  last-turn nudge before max_turns exhausts
+  * #1: retry with exponential backoff (deadline-aware)
+  * #2: verify workspace/outcome.json before accepting [FINAL_ANSWER]
+  * #3: ChatResponse dataclass carrying usage / stop_reason
+  * #4: max_tokens defaults to None (vendor default)
+  * #5: trajectory streamed to disk on every event
+  * #6: trajectory records full tool output + exec_logs persistence
+  * #7: three-level fallback code-block extraction
+  * #8: optional MAX_BLOCKS_PER_TURN cap (default: unlimited)
+  * #9: [FINAL_ANSWER] must be on its own line, outside code fences
+  * #10-12: system prompt aligned with the above
+  * #13: run() returns terminated_by
+  * #14: last-turn nudge before max_turns exhausts
 """
 from __future__ import annotations
 
@@ -202,7 +202,7 @@ def _usage_to_dict(u: Any) -> dict:
 # ---------------------------------------------------------------------------
 def _persist_exec_log(log_dir: Path, log_name: str, code: str,
                       output: str, ok: bool) -> None:
-    """Persist code + full output for post-hoc audit (v2 #6, 李-3)."""
+    """Persist code + full output for post-hoc audit (v2 #6, )."""
     try:
         log_dir.mkdir(parents=True, exist_ok=True)
         (log_dir / f"{log_name}.py").write_text(code, encoding="utf-8")
@@ -230,7 +230,7 @@ class SubprocessExecutor:
         pass
 
     def run(self, code: str, *, log_name: str | None = None) -> tuple[bool, str]:
-        # v3.3 (Wei-3): prepend a determinism prologue driven by BENCH_SEED so any
+        # v3.3: prepend a determinism prologue driven by BENCH_SEED so any
         # random/numpy usage inside agent code reproduces per trial-seed. The host
         # subprocess inherits PYTHONHASHSEED too (set by runner main).
         import os
@@ -283,7 +283,7 @@ CodeExecutor = SubprocessExecutor  # backward-compat alias
 # ---------------------------------------------------------------------------
 # The Agent
 # ---------------------------------------------------------------------------
-# v2 (#10-12 侯-Prompt-1/2/3)
+# v2 (#10-12 )
 SYSTEM_PROMPT = textwrap.dedent(
     """
     You are a data-analysis agent. You solve the task by writing Python code
@@ -358,13 +358,13 @@ class HttpApiAgent:
         self.terminated_by: str | None = None
         self._per_step_timeout: int = 180
         self._pending_observation: str = ""
-        # v3 (侯-3): circuit breaker counters.
+        # v3: circuit breaker counters.
         self._empty_streak: int = 0           # consecutive turns with no code AND no [FINAL_ANSWER]
         self._repeat_streak: int = 0          # consecutive turns with the same reply body
         self._last_reply_hash: str | None = None
         self._empty_streak_limit = int(empty_streak_limit)
         self._repeat_streak_limit = int(repeat_streak_limit)
-        # v4 (罗-3): track last code execution time for mtime freshness check.
+        # v4: track last code execution time for mtime freshness check.
         self._last_exec_time: float | None = None
 
     def setup(self, task_dir: Path, workspace: Path) -> None:
@@ -374,7 +374,7 @@ class HttpApiAgent:
         if self.executor is None:
             self.executor = SubprocessExecutor(workspace, timeout=self._per_step_timeout)
         self.executor.setup()
-        # v3.3 (Wei-3): seed this process's own RNGs from exported BENCH_SEED so
+        # v3.3: seed this process's own RNGs from exported BENCH_SEED so
         # adapter-side randomness (retry jitter, sampling) is deterministic per
         # trial-seed instead of collapsing across seeds when temperature == 0.
         try:
@@ -458,7 +458,7 @@ class HttpApiAgent:
                     self.usage_summary[k] += int(v)
             self.usage_summary["calls"] += 1
 
-        # v3 (Hou-3) / v3.3 (Li-5): repeat detection. A turn that declares
+        # v3 / v3.3: repeat detection. A turn that declares
         # [FINAL_ANSWER] is routed to the verify branch below REGARDLESS of body
         # repetition — it must NOT feed the stuck-loop counter. Otherwise an
         # identical-but-valid repeated answer whose outcome verification is still
@@ -489,14 +489,14 @@ class HttpApiAgent:
 
         code_blocks = _extract_all_python(reply)
 
-        # v3 (侯-1): if the reply was cut off by max_tokens ("stop_reason=length")
+        # v3: if the reply was cut off by max_tokens ("stop_reason=length")
         # and the strict regex found nothing, try to salvage a truncated block:
         # take from the last opening ```python (or ```py) fence to the end and
         # mark it truncated=True. If successful, also stitch a hint into the
         # observation asking the model to finish the truncated code next turn.
         length_truncated = (resp.stop_reason == "length")
         truncated_note = ""
-        truncated_block_idxs: set[int] = set()  # v4 (王-1): track salvaged blocks
+        truncated_block_idxs: set[int] = set()  # v4 : track salvaged blocks
         if length_truncated and not code_blocks:
             salvaged = _salvage_truncated_python(reply)
             if salvaged:
@@ -518,7 +518,7 @@ class HttpApiAgent:
                 "smaller chunks."
             )
 
-        # v2 (#8, 王-1): optional cap on blocks-per-turn.
+        # v2 (#8): optional cap on blocks-per-turn.
         capped_note = ""
         if self.max_blocks_per_turn is not None and len(code_blocks) > self.max_blocks_per_turn:
             n_all = len(code_blocks)
@@ -533,7 +533,7 @@ class HttpApiAgent:
         any_failed = False
         for i, code in enumerate(code_blocks):
             log_name = f"block_{self._turn_idx:02d}_{i:02d}"
-            # v3 (李-5a): executor faults (OSError, subprocess errors) are
+            # v3: executor faults (OSError, subprocess errors) are
             # infrastructure crashes, not the model's fault — tag them as
             # executor_crash so aggregate.py can drop them from the mean.
             try:
@@ -542,7 +542,7 @@ class HttpApiAgent:
                 except TypeError:
                     # Backward compat: executors without log_name kwarg.
                     ok, output = self.executor.run(code)  # type: ignore[union-attr]
-                # v4 (罗-3): record execution timestamp for mtime freshness check.
+                # v4: record execution timestamp for mtime freshness check.
                 self._last_exec_time = time.time()
             except (OSError, subprocess.SubprocessError) as exc:
                 self.terminated_by = "executor_crash"
@@ -567,7 +567,7 @@ class HttpApiAgent:
                 "content": trunc,
                 "content_full": output,
                 "ok": ok,
-                "truncated": i in truncated_block_idxs,  # v4 (王-1)
+                "truncated": i in truncated_block_idxs,  # v4
                 "block_idx": i,
                 "turn_idx": self._turn_idx,
                 "log_name": log_name,
@@ -580,11 +580,11 @@ class HttpApiAgent:
         if truncated_note:
             pending += truncated_note
 
-        # v2 (#9, 侯-协议-C): anchor [FINAL_ANSWER] to its own line, outside fences.
+        # v2 (#9): anchor [FINAL_ANSWER] to its own line, outside fences.
         declared_final = _detect_final_answer(reply)
 
         if declared_final:
-            # v3 (侯-2): accept [FINAL_ANSWER] whenever outcome.json is already
+            # v3: accept [FINAL_ANSWER] whenever outcome.json is already
             # written, even if this turn had no code blocks. The write may have
             # happened in a previous turn (e.g. model wrote outcome, saw a
             # bounce, then re-sent [FINAL_ANSWER] alone).
@@ -624,7 +624,7 @@ class HttpApiAgent:
             )
             if truncated_note:
                 pending += truncated_note
-            # v3 (侯-3): count consecutive empty (no code, no final) turns.
+            # v3: count consecutive empty (no code, no final) turns.
             self._empty_streak += 1
             if self._empty_streak >= self._empty_streak_limit:
                 self.terminated_by = "no_progress"
@@ -648,9 +648,9 @@ class HttpApiAgent:
         return "continue"
 
     def _verify_final_answer(self) -> tuple[bool, str]:
-        """v2 (#2, 侯-P0-2): check workspace/outcome.json exists and parses.
+        """v2 (#2): check workspace/outcome.json exists and parses.
 
-        v4 (罗-3): also checks mtime — if outcome.json was written BEFORE
+        v4 : also checks mtime — if outcome.json was written BEFORE
         the most recent code execution, it's likely stale (leftover from a
         prior step) and the model forgot to regenerate it.
         """
@@ -665,7 +665,7 @@ class HttpApiAgent:
             return False, f"could not be parsed as JSON ({type(exc).__name__}: {exc})"
         if not isinstance(data, dict):
             return False, "must be a JSON object (dict) at the top level"
-        # v4 (罗-3): mtime freshness check — detect stale outcome.json
+        # v4: mtime freshness check — detect stale outcome.json
         if hasattr(self, "_last_exec_time") and self._last_exec_time is not None:
             try:
                 mtime = path.stat().st_mtime
@@ -680,7 +680,7 @@ class HttpApiAgent:
         return True, ""
 
     def _workspace_listing_hint(self) -> str:
-        """v3 (罗-2): attach a compact listing of the workspace root so the model
+        """v3 : attach a compact listing of the workspace root so the model
         can distinguish "code did not run" from "code ran but wrote wrong filename".
 
         Only files under workspace root (depth 1) are listed; size in bytes.
@@ -722,7 +722,7 @@ class HttpApiAgent:
         try:
             for turn in range(self.max_turns):
                 self._turn_idx = turn
-                # v2 (#14, 王-2): last-turn nudge.
+                # v2 (#14): last-turn nudge.
                 if turn == self.max_turns - 1 and turn > 0:
                     hint = (
                         f"[Framework note] This is the FINAL turn "
@@ -734,14 +734,14 @@ class HttpApiAgent:
                 try:
                     status = self.step(observation)
                 except Exception:
-                    # v3 (李-5b): preserve executor_crash / stuck_loop / no_progress
+                    # v3: preserve executor_crash / stuck_loop / no_progress
                     # signals set by step() before falling back to api_error.
                     self.terminated_by = self.terminated_by or "api_error"
                     return self.terminated_by
                 observation = self._pending_observation
                 self._pending_observation = ""
                 if status == "done":
-                    # v3 (侯-3): step() also returns "done" when the circuit
+                    # v3: step() also returns "done" when the circuit
                     # breaker fires (stuck_loop / no_progress). In that case
                     # terminated_by is already set — DON'T overwrite it with
                     # final_answer.
@@ -828,7 +828,7 @@ def _extract_python(text: str) -> str | None:
     return blocks[0] if blocks else None
 
 
-# v3 (侯-1): salvage helper for max_tokens-truncated replies.
+# v3: salvage helper for max_tokens-truncated replies.
 _TRUNCATED_OPEN_RE = re.compile(
     r"```(?:python|py)?\s*\n", re.IGNORECASE
 )

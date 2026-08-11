@@ -489,7 +489,7 @@ python -m framework.runner --task tasks/<scenario>/<NNN_short_name> \
 **问题反馈：本仓库 issues**
 
 
-## Trial 状态字段语义（v3.3，侯‑6）
+## Trial 状态字段语义（v3.3）
 
 每个 trial 的 `score.json` 同时携带两个看起来相似的终止信息，但它们的**权威性不同**，报告与聚合必须只认一个：
 

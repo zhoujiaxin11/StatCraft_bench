@@ -3,7 +3,7 @@ framework/statuses.py
 =====================
 Single source of truth for trial status classification.
 
-v4 (吴-3): extracted from runner.py and aggregate.py to eliminate
+v4 : extracted from runner.py and aggregate.py to eliminate
 diverging copies. Both modules MUST import from here.
 
 Status categories
@@ -54,7 +54,7 @@ def bucket(status: str | None) -> str:
 
     Returns one of: "ok", "infra", "model_fail", "unknown".
 
-    v4 (吴-3): unknown statuses now return "unknown" instead of silently
+    v4 : unknown statuses now return "unknown" instead of silently
     falling through to "ok". Callers should treat "unknown" as infra
     (conservative: don't credit the model for an unrecognized state).
     """

@@ -65,14 +65,14 @@ class TaskAggregate:
     pass_all: float                  # 1.0 if ALL runs passed else 0.0
     bimodal: bool | None             # unstable / mixed-outcome flag; None when n_runs < 3
     vetoed_runs: int = 0             # runs zeroed by essential/unacceptable veto
-    # v2 (#28, 吴-5 / QA-5): crash accounting so scores measure ability, not
+    # v2 (#28, / QA-5): crash accounting so scores measure ability, not
     # network luck. Crashed runs are EXCLUDED from stable_score / std /
     # consistency / pass_*.
     n_total: int = 0                 # every trial found on disk
     n_crashed: int = 0
     crash_rate: float = 0.0
     crash_statuses: dict[str, int] = field(default_factory=dict)
-    # v3 (吴-3): split infra vs model_fail accounting so reports can tell
+    # v3: split infra vs model_fail accounting so reports can tell
     # "we lost this trial to network noise" from "the model gave up".
     n_infra: int = 0                 # dropped from mean (infra crashed)
     n_model_fail: int = 0            # counted as 0 in mean (model gave up)
@@ -94,7 +94,7 @@ class ModelAggregate:
     ci_high: float | None
     mean_consistency: float          # avg consistency across tasks
     flagged_bimodal: list[str] = field(default_factory=list)
-    # v2 (#29, 吴-6 / QA-6): flag insufficient-data outputs.
+    # v2 (#29, / QA-6): flag insufficient-data outputs.
     insufficient_tasks: bool = False
 
     def to_dict(self) -> dict:
@@ -166,7 +166,7 @@ def apply_veto(score_json: dict, groundtruth: dict) -> tuple[float, bool]:
 # ---------------------------------------------------------------------------
 # Trial collection
 # ---------------------------------------------------------------------------
-# v3 (吴-3 / 罗-3 / 魏-3): distinguish two failure modes so scores measure
+# v3: distinguish two failure modes so scores measure
 # ability, not infrastructure luck:
 #   * INFRA_STATUSES     : the trial did not measure the model at all
 #                          (network died, executor crashed, scorer bug). These
@@ -180,7 +180,7 @@ def apply_veto(score_json: dict, groundtruth: dict) -> tuple[float, bool]:
 # Pre-v3 both buckets were collapsed into CRASH_STATUSES and dropped, which
 # meant "not answering" (max_turns / no_output) scored higher than "answering
 # badly", and the ranking could flip.
-# v4 (吴-3): import from the single source of truth.
+# v4: import from the single source of truth.
 from framework.statuses import (
     INFRA_STATUSES,
     MODEL_FAIL_STATUSES,
@@ -232,7 +232,7 @@ def collect_trial_scores(
             with open(score_path, "r", encoding="utf-8") as fh:
                 sj = json.load(fh)
         except OSError:
-            # v4 (李-2): disk I/O failure is infra — not the model's fault.
+            # v4: disk I/O failure is infra — not the model's fault.
             # Drop from the ability estimate (usable=False).
             records.append({
                 "score": 0.0, "vetoed": False,
@@ -260,7 +260,7 @@ def collect_trial_scores(
             else:
                 status = "ok"
         bucket = _bucket(status)
-        # v3 (吴-3): "usable" means "contributes to ability estimate". Infra
+        # v3: "usable" means "contributes to ability estimate". Infra
         # failures are dropped; model-fail counts as 0.
         usable = bucket != "infra"
         # Model failures score 0 regardless of what score.json says (defensive:
@@ -307,7 +307,7 @@ def aggregate_task(
     model_fail = [r for r in raw if r["bucket"] == "model_fail"]
     n_infra = len(infra)
     n_model_fail = len(model_fail)
-    # v3 (吴-3): crash_rate is now infra-only. Model-fail contributes 0 to the
+    # v3: crash_rate is now infra-only. Model-fail contributes 0 to the
     # mean but isn't "crashed" — the model measurable behaved and lost.
     crash_rate = round(n_infra / n_total, 4) if n_total else 0.0
     infra_statuses: dict[str, int] = {}
@@ -358,7 +358,7 @@ def aggregate_task(
         passes = [1 if s >= pass_threshold else 0 for s in scores]
         pass_at_1 = statistics.fmean(passes)
         pass_all = 1.0 if all(passes) else 0.0
-        # v2 (#27, 魏-2): bimodal means "not everyone-passed and not everyone-failed"
+        # v2 (#27): bimodal means "not everyone-passed and not everyone-failed"
         # — i.e. the seeds disagree, which is exactly the instability signal.
         # Pre-v2 the polarity was inverted (flagged rock-stable tasks as unstable).
         bimodal = not (all(p == 1 for p in passes) or all(p == 0 for p in passes))
@@ -415,7 +415,7 @@ def bootstrap_ci(
     you happened to include, which is the real source of ranking instability at
     20-50 tasks.
 
-    v2 (#29, 吴-6 / QA-6): return (None, None) when there are fewer than
+    v2 (#29,  / QA-6): return (None, None) when there are fewer than
     `min_tasks` tasks. A zero-width CI on a single task reads like "extremely
     confident" when the truth is "not enough data to bootstrap".
     """

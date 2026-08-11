@@ -3,7 +3,7 @@ framework/batch.py
 ==================
 Batch runner: fan out (task × model × seed) triples over a process pool.
 
-v3 (侯-设计1): the single-task ``runner.py`` intentionally stays single-task.
+v3 : the single-task ``runner.py`` intentionally stays single-task.
 This wrapper does the cartesian product and calls the runner as a subprocess
 per trial, so:
 
@@ -100,7 +100,7 @@ def _build_cmd(
 
 
 def _reap_trial_containers(trial_tag: str) -> None:
-    """v3.3 (Hou-3): best-effort kill of any docker container labelled
+    """v3.3 : best-effort kill of any docker container labelled
     ``bench.trial=<trial_tag>`` so a batch-level timeout that orphans the child
     runner does NOT leak its long-lived agent container until external teardown.
     Reaps BY LABEL ONLY — sibling trials' containers are never touched."""
@@ -126,7 +126,7 @@ def _run_one(cmd: list[str], log_root: Path, tag: str,
              timeout: int = 7200) -> tuple[str, int, str]:
     """Run a single subprocess; capture stdout+stderr to file. Return (tag, rc, log_path).
 
-    v4/v3.3 (Hou-3): added a wall-clock ``timeout`` (default 7200s). When it fires we
+    v4/v3.3 : added a wall-clock ``timeout`` (default 7200s). When it fires we
     SIGKILL our own python child — but its long-lived agent container keeps running,
     because teardown() never ran in the orphaned child. So on TIMEOUT we also reap any
     containers carrying this trial's ``bench.trial`` label before returning rc=-1.
@@ -167,7 +167,7 @@ def main() -> None:
     parser.add_argument("--parallel", type=int, default=1,
                         help="Max concurrent trials. Watch Docker/RAM.")
     parser.add_argument("--log-dir", default=None,
-                        help="Where per-trial stdout goes. Default: <root>/.comate/batch_logs/<ts>.")
+                        help="Where per-trial stdout goes. Default: <root>/.bench/batch_logs/<ts>.")
 
     # Passthrough flags — kept minimal on purpose; add more as needed.
     parser.add_argument("--use-docker", action="store_true")
@@ -176,7 +176,7 @@ def main() -> None:
     parser.add_argument("--api-base", default=None)
     parser.add_argument("--api-key", default=None)
     parser.add_argument("--api-config", default=None,
-                        help="v4 (侯-4): JSON file mapping model_name → "
+                        help="v4 : JSON file mapping model_name → "
                              "{api_base, api_key_env, model_id?}. Overrides "
                              "--api-base/--api-key per model.")
     parser.add_argument("--model-id", default=None,
@@ -197,7 +197,7 @@ def main() -> None:
     if not seeds:
         raise SystemExit("No seeds provided.")
 
-    # v4 (侯-4): load per-model API config if provided.
+    # v4: load per-model API config if provided.
     # Format: {"model_name": {"api_base": "...", "api_key_env": "ENV_VAR", "model_id": "..."}}
     api_config: dict[str, dict] = {}
     if args.api_config:
@@ -227,16 +227,16 @@ def main() -> None:
         passthrough.append("--keep-full-workspace")
 
     log_root = Path(args.log_dir) if args.log_dir else (
-        ROOT / ".comate" / "batch_logs" / time.strftime("%Y%m%d_%H%M%S")
+        ROOT / ".bench" / "batch_logs" / time.strftime("%Y%m%d_%H%M%S")
     )
-    # v3.3 (Hou-3): per-invocation unique suffix so two batches sharing an identical
+    # v3.3: per-invocation unique suffix so two batches sharing an identical
     # (task,model,seed) combo cannot collide on the bench.trial label we reap by below.
     _launch_ts = str(int(time.time()))
 
     combos: list[tuple[Path, str, int, str, list[str]]] = []
     for task in tasks:
         for model in models:
-            # v4 (侯-4): per-model API override from --api-config
+            # v4: per-model API override from --api-config
             model_passthrough = list(passthrough)
             if model in api_config:
                 mcfg = api_config[model]
@@ -285,7 +285,7 @@ def main() -> None:
                     model_passthrough = _cleaned3
                     model_passthrough.extend(["--model-id", mcfg["model_id"]])
             for seed in seeds:
-                # v3.3 (Hou-3 / Wei-3): this same string travels both ways — it
+                # v3.3: this same string travels both ways — it
                 # becomes --trial-tag -> bench.trial=<tag> docker LABEL on every
                 # container the child runner starts, so _run_one can reap EXACTLY
                 # those containers if our process times out. The launch-ts suffix
