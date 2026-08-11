@@ -1,0 +1,218 @@
+{
+  "task_id": "159_gaokao_reform",
+  "difficulty": "extreme",
+  "notes": "Groundtruth for the 159 Gaokao reform sample. Values migrated from the original 159 task's groundtruth.json; weights re-designed with capability-level grouping and graded tolerance. Physically isolated from tasks/ — the agent never sees this file.",
+
+  "capability_map": {
+    "part1_overview.total_records":                    ["data_cleaning"],
+    "part1_overview.province_count":                   ["data_cleaning"],
+    "part1_overview.year_min":                         ["data_cleaning"],
+    "part1_overview.year_max":                         ["data_cleaning"],
+    "part1_overview.cleaned_records":                  ["data_cleaning"],
+    "part1_overview.missing_count":                    ["data_cleaning"],
+    "part1_overview.anomaly_notes":                    ["data_cleaning"],
+    "part1_overview.mode_distribution":                ["data_cleaning"],
+
+    "part2_reform_impact.province_analyzed":           ["grouped_comparison"],
+    "part2_reform_impact.old_physics_liberal_ratio":   ["grouped_comparison"],
+    "part2_reform_impact.new_physics_history_ratio":   ["grouped_comparison"],
+    "part2_reform_impact.high_score_above_600_old":    ["weighted_statistics"],
+    "part2_reform_impact.high_score_above_600_new":    ["weighted_statistics"],
+    "part2_reform_impact.weighted_mean_old":           ["weighted_statistics"],
+    "part2_reform_impact.weighted_mean_new":           ["weighted_statistics"],
+    "part2_reform_impact.std_old":                     ["weighted_statistics"],
+    "part2_reform_impact.std_new":                     ["weighted_statistics"],
+    "part2_reform_impact.reform_direction":            ["grouped_comparison"],
+
+    "part3_model.feature_count":                       ["time_series_features"],
+    "part3_model.feature_names":                       ["leakage_prevention"],
+    "part3_model.test_years":                          ["time_series_features"],
+    "part3_model.R2":                                  ["regression_modeling"],
+    "part3_model.RMSE":                                ["regression_modeling"],
+    "part3_model.MAE":                                 ["regression_modeling"],
+    "part3_model.top_features":                        ["regression_modeling"],
+
+    "part4_causal.did_effect":                         ["did_estimation"],
+    "part4_causal.scm_effect":                         ["synthetic_control"],
+    "part4_causal.placebo_time_effect":                ["placebo_test"],
+    "part4_causal.placebo_treat_effect":               ["placebo_test"],
+    "part4_causal.sensitivity_min":                    ["did_estimation"],
+    "part4_causal.sensitivity_max":                    ["did_estimation"],
+    "part4_causal.consistency":                        ["did_estimation", "synthetic_control"],
+    "part4_causal.parallel_trend_diff":                ["parallel_trend_test"],
+    "part4_causal.parallel_trend_pvalue":              ["parallel_trend_test"],
+
+    "part5_advanced.tail_index_value":                 ["evt_tail_index"],
+    "part5_advanced.panel_ols_coefs":                  ["panel_ols_inference"],
+    "part5_advanced.distribution_distance":            ["wasserstein_distance"],
+    "part5_advanced.conformal_empirical_coverage":     ["conformal_prediction"],
+    "part5_advanced.conformal_mean_width":             ["conformal_prediction"]
+  },
+
+  "values": {
+    "part1_overview": {
+      "total_records":    535326,
+      "province_count":   31,
+      "year_min":         2000,
+      "year_max":         2025,
+      "cleaned_records":  534945,
+      "missing_count":    165,
+      "expected_top_modes": ["3+X", "3+1+2", "3+3"]
+    },
+    "part2_reform_impact": {
+      "province_selection_accept":  ["河北"],
+      "old_physics_liberal_ratio":  1.49,
+      "new_physics_history_ratio":  1.07,
+      "high_score_above_600_old":   31475,
+      "high_score_above_600_new":   13411,
+      "weighted_mean_old":          474.78,
+      "weighted_mean_new":          471.57,
+      "std_old":                    106.06,
+      "std_new":                    88.58,
+      "reform_direction": {"mean": "down", "std": "down", "high_score_share": "down"}
+    },
+    "part3_model": {
+      "feature_count_min":    5,
+      "test_years_required":  [2024, 2025],
+      "R2_oracle":            0.8595,
+      "RMSE_oracle":          4259.01,
+      "MAE_oracle":           2659.99,
+      "top_features_expected_top1_keywords": ["hist_mean", "hist"]
+    },
+    "part4_causal": {
+      "did_effect":                 8461.2,
+      "scm_effect":                19910.8,
+      "placebo_time_effect":        4334.2,
+      "placebo_treat_effect":          0.0,
+      "sensitivity_min":            7510.6,
+      "sensitivity_max":            9052.2,
+      "parallel_trend_diff":         9358.6,
+      "parallel_trend_pvalue":          0.0
+    },
+    "part5_advanced": {
+      "tail_index_value":                 0.0339,
+      "distribution_distance":             21.5,
+      "conformal_target_coverage":          0.8,
+      "conformal_empirical_coverage":       0.75,
+      "conformal_mean_width_max":         14094.0,
+      "panel_ols_required_keys":          ["intercept", "year", "is_new"],
+      "panel_ols_is_new_coef_target":     1.63
+    }
+  },
+
+  "weights": {
+    "part1_overview.total_records":                    1,
+    "part1_overview.province_count":                   1,
+    "part1_overview.year_min":                         1,
+    "part1_overview.year_max":                         1,
+    "part1_overview.cleaned_records":                  1,
+    "part1_overview.missing_count":                    1,
+    "part1_overview.anomaly_notes":                    1,
+    "part1_overview.mode_distribution":                1,
+
+    "part2_reform_impact.province_analyzed":           2,
+    "part2_reform_impact.old_physics_liberal_ratio":   2,
+    "part2_reform_impact.new_physics_history_ratio":   2,
+    "part2_reform_impact.high_score_above_600_old":    2,
+    "part2_reform_impact.high_score_above_600_new":    2,
+    "part2_reform_impact.weighted_mean_old":           2,
+    "part2_reform_impact.weighted_mean_new":           2,
+    "part2_reform_impact.std_old":                     2,
+    "part2_reform_impact.std_new":                     2,
+    "part2_reform_impact.reform_direction":            2,
+
+    "part3_model.feature_count":                       2,
+    "part3_model.feature_names":                       5,
+    "part3_model.test_years":                          3,
+    "part3_model.R2":                                  6,
+    "part3_model.RMSE":                                4,
+    "part3_model.MAE":                                 4,
+    "part3_model.top_features":                        2,
+
+    "part4_causal.did_effect":                         3,
+    "part4_causal.scm_effect":                         3,
+    "part4_causal.placebo_time_effect":                2,
+    "part4_causal.placebo_treat_effect":               2,
+    "part4_causal.sensitivity_min":                    1,
+    "part4_causal.sensitivity_max":                    1,
+    "part4_causal.consistency":                        1,
+    "part4_causal.parallel_trend_diff":                2,
+    "part4_causal.parallel_trend_pvalue":              1,
+
+    "part5_advanced.tail_index_value":                 2,
+    "part5_advanced.panel_ols_coefs":                  5,
+    "part5_advanced.distribution_distance":            2,
+    "part5_advanced.conformal_empirical_coverage":     3,
+    "part5_advanced.conformal_mean_width":             1
+  },
+
+  "scoring": {
+    "part1_overview.total_records":               {"type": "exact_number", "gt": 535326},
+    "part1_overview.province_count":              {"type": "exact_number", "gt": 31},
+    "part1_overview.year_min":                    {"type": "exact_number", "gt": 2000},
+    "part1_overview.year_max":                    {"type": "exact_number", "gt": 2025},
+    "part1_overview.cleaned_records":             {"type": "graded", "gt": 534945, "levels": [{"abs": 100, "score": 1.0}, {"abs": 500, "score": 0.5}]},
+    "part1_overview.missing_count":               {"type": "graded", "gt": 165, "levels": [{"abs": 30, "score": 1.0}, {"abs": 100, "score": 0.5}]},
+    "part1_overview.anomaly_notes":               {"type": "contains", "any": ["剔除", "删除", "异常", "缺失", "空", "填0", "填充", "remove", "removed", "drop", "dropped", "exclude", "excluded", "delete", "deleted", "anomaly", "anomalies", "outlier", "outliers", "missing", "missingness", "null", "nan", "na", "fill", "filled", "impute", "imputed"]},
+    "part1_overview.mode_distribution":           {"type": "presence"},
+
+    "part2_reform_impact.province_analyzed":     {"type": "accept_set", "accept": ["河北"]},
+    "part2_reform_impact.old_physics_liberal_ratio": {"type": "graded", "gt": 1.49, "levels": [{"tol": 0.10, "score": 1.0}, {"tol": 0.20, "score": 0.7}, {"tol": 0.30, "score": 0.3}]},
+    "part2_reform_impact.new_physics_history_ratio": {"type": "graded", "gt": 1.07, "levels": [{"tol": 0.10, "score": 1.0}, {"tol": 0.20, "score": 0.7}, {"tol": 0.30, "score": 0.3}]},
+    "part2_reform_impact.high_score_above_600_old":  {"type": "graded", "gt": 31475, "levels": [{"tol": 0.05, "score": 1.0}, {"tol": 0.15, "score": 0.5}]},
+    "part2_reform_impact.high_score_above_600_new":  {"type": "graded", "gt": 13411, "levels": [{"tol": 0.05, "score": 1.0}, {"tol": 0.15, "score": 0.5}]},
+    "part2_reform_impact.weighted_mean_old":      {"type": "graded", "gt": 474.78, "levels": [{"tol": 0.005, "score": 1.0}, {"tol": 0.02, "score": 0.7}, {"tol": 0.05, "score": 0.3}]},
+    "part2_reform_impact.weighted_mean_new":      {"type": "graded", "gt": 471.57, "levels": [{"tol": 0.005, "score": 1.0}, {"tol": 0.02, "score": 0.7}, {"tol": 0.05, "score": 0.3}]},
+    "part2_reform_impact.std_old":                {"type": "graded", "gt": 106.06, "levels": [{"tol": 0.02, "score": 1.0}, {"tol": 0.08, "score": 0.5}]},
+    "part2_reform_impact.std_new":                {"type": "graded", "gt": 88.58,  "levels": [{"tol": 0.02, "score": 1.0}, {"tol": 0.08, "score": 0.5}]},
+    "part2_reform_impact.reform_direction":       {"type": "object_keys_match", "gt": {"mean": "down", "std": "down", "high_score_share": "down"}},
+
+    "part3_model.feature_count":                  {"type": "min_threshold", "levels": [{"min": 5, "score": 1.0}, {"min": 3, "score": 0.5}]},
+    "part3_model.feature_names":                  {"type": "no_leakage_keywords", "forbidden": ["人数", "累计", "rank", "位次", "high_score", "high_count"]},
+    "part3_model.test_years":                     {"type": "list_set", "gt": [2024, 2025]},
+    "part3_model.R2":                             {"type": "min_threshold", "levels": [{"min": 0.85, "score": 1.0}, {"min": 0.70, "score": 0.6}, {"min": 0.55, "score": 0.3}]},
+    "part3_model.RMSE":                           {"type": "max_threshold", "levels": [{"max": 4400, "score": 1.0}, {"max": 5200, "score": 0.6}, {"max": 6400, "score": 0.3}]},
+    "part3_model.MAE":                            {"type": "max_threshold", "levels": [{"max": 2700, "score": 1.0}, {"max": 3100, "score": 0.6}, {"max": 3600, "score": 0.3}]},
+    "part3_model.top_features":                   {"type": "presence"},
+
+    "part4_causal.did_effect":                    {"type": "graded", "gt": 8461.2, "levels": [{"abs": 2000, "score": 1.0}, {"abs": 4000, "score": 0.6}, {"abs": 6000, "score": 0.3}]},
+    "part4_causal.scm_effect":                    {"type": "graded", "gt": 19910.8, "levels": [{"abs": 5000, "score": 1.0}, {"abs": 10000, "score": 0.6}, {"abs": 15000, "score": 0.3}]},
+    "part4_causal.placebo_time_effect":           {"type": "graded", "gt": 4334.2, "levels": [{"abs": 2000, "score": 1.0}, {"abs": 4500, "score": 0.5}]},
+    "part4_causal.placebo_treat_effect":          {"type": "graded", "gt": 0.0,     "levels": [{"abs": 2000, "score": 1.0}, {"abs": 4500, "score": 0.5}]},
+    "part4_causal.sensitivity_min":               {"type": "presence"},
+    "part4_causal.sensitivity_max":               {"type": "presence"},
+    "part4_causal.consistency":                   {"type": "bool", "gt": true},
+    "part4_causal.parallel_trend_diff":           {"type": "graded", "gt": 9358.6, "levels": [{"abs": 3000, "score": 1.0}, {"abs": 7000, "score": 0.5}]},
+    "part4_causal.parallel_trend_pvalue":         {"type": "graded", "gt": 0.0, "levels": [{"abs": 0.10, "score": 1.0}, {"abs": 0.30, "score": 0.5}]},
+
+    "part5_advanced.tail_index_value":            {"type": "graded", "gt": 0.0339, "levels": [{"abs": 0.02, "score": 1.0}, {"abs": 0.06, "score": 0.5}]},
+    "part5_advanced.panel_ols_coefs":             {"type": "presence"},
+    "part5_advanced.distribution_distance":       {"type": "graded", "gt": 21.5,   "levels": [{"abs": 8.0, "score": 1.0}, {"abs": 20.0, "score": 0.5}]},
+    "part5_advanced.conformal_empirical_coverage": {"type": "min_threshold", "levels": [{"min": 0.70, "score": 1.0}, {"min": 0.60, "score": 0.5}]},
+    "part5_advanced.conformal_mean_width":        {"type": "graded", "gt": 6737.6, "levels": [{"abs": 2500, "score": 1.0}, {"abs": 5000, "score": 0.5}]}
+  },
+
+  "pytest_weight_map": {
+    "test_outcome_json_exists":                1,
+    "test_predictions_csv_exists":             1,
+    "test_outcome_has_all_parts":              2,
+    "test_outcome_is_json_serializable":       1,
+    "test_predictions_has_required_columns":   1,
+    "test_predictions_has_conformal_bounds":   1,
+    "test_predictions_include_2024_2025":      1,
+    "test_predictions_no_extreme_negative":    1,
+    "test_no_leakage_in_feature_names":        3,
+    "test_feature_count_at_least_5":           1,
+    "test_part4_has_two_methods":              2,
+    "test_part4_placebo_reported":             1,
+    "test_part5_panel_ols_has_min_coefs":      2
+  },
+
+  "veto": {
+    "essential": ["part2_reform_impact.reform_direction"],
+    "unacceptable": [],
+    "_comment": "essential: reform_direction must score > 0, else the whole task is zeroed. Rationale: a report that gets every mean/std right (2.4% weight) but calls the reform direction backwards is worthless to a client — direction is the headline conclusion. Applied at the aggregate.py (task-level) layer, NOT in single-run scorer.py; single-run score.json still credits the 2 weight points. See TASK_AUTHORING.md."
+  },
+
+  "factoid_alpha": 0.9
+}

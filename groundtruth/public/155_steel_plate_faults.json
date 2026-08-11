@@ -1,0 +1,223 @@
+{
+  "task_id": "155_steel_plate_faults",
+  "difficulty": "extreme",
+  "notes": "Physically isolated from tasks/ — the agent never sees this file. Leaf fields distilled from the original 65-checkpoint rubric into a factoid-friendly subset spanning all 10 analysis modules. Model-dependent metrics use threshold rules (credit any solution that builds a genuine, non-degenerate pipeline); structural facts use exact_number. Numbers co-produced by solution/solve.py.",
+
+  "values": {
+    "part1_data_audit": {
+      "n_samples": 1941,
+      "n_features": 27,
+      "n_label_columns": 7,
+      "n_classes": 7,
+      "missing_values_total": 0,
+      "duplicate_rows": 0,
+      "label_leakage_prevented": true
+    },
+    "part2_class_imbalance": {
+      "majority_class": "Other_Faults",
+      "minority_class": "Dirtiness",
+      "majority_count": 673,
+      "minority_count": 55,
+      "imbalance_ratio": 12.2364,
+      "primary_metric": "macro_f1",
+      "minority_classes": ["Stains", "Dirtiness"]
+    },
+    "part3_split": {
+      "split_method": "stratified_train_test_split",
+      "train_size": 1552,
+      "test_size_count": 389
+    },
+    "part4_baseline": {
+      "n_baseline_models": 5,
+      "best_baseline_model": "RandomForest",
+      "best_baseline_macro_f1": 0.8132
+    },
+    "part5_imbalance_treatment": {
+      "best_strategy_macro_f1": 0.8326,
+      "best_minority_macro_f1": 0.8906
+    },
+    "part6_steel_type_bias": {
+      "with_steel_type_macro_f1": 0.8132,
+      "without_steel_type_macro_f1": 0.8035,
+      "performance_drop": 0.0097
+    },
+    "part7_two_stage": {
+      "stage1_binary_f1": 0.6867,
+      "two_stage_macro_f1": 0.7829,
+      "direct_7class_macro_f1": 0.8132
+    },
+    "part8_cost": {
+      "lowest_cost_model": "two_stage",
+      "lowest_total_cost": 186.0,
+      "is_lowest_cost_same_as_macro_f1_best": false
+    },
+    "part9_interpretability": {
+      "top1_feature": "Length_of_Conveyer",
+      "top3_features": ["Length_of_Conveyer", "Pixels_Areas", "LogOfAreas"]
+    },
+    "part10_robustness": {
+      "cv_macro_f1_mean": 0.8007,
+      "cv_macro_f1_std": 0.0091
+    }
+  },
+
+  "weights": {
+    "part1_data_audit.n_samples":            1,
+    "part1_data_audit.n_features":           1,
+    "part1_data_audit.n_label_columns":      1,
+    "part1_data_audit.n_classes":            1,
+    "part1_data_audit.missing_values_total": 1,
+    "part1_data_audit.duplicate_rows":       1,
+    "part1_data_audit.label_leakage_prevented": 2,
+
+    "part2_class_imbalance.majority_class":    1,
+    "part2_class_imbalance.minority_class":    1,
+    "part2_class_imbalance.majority_count":    1,
+    "part2_class_imbalance.minority_count":    1,
+    "part2_class_imbalance.imbalance_ratio":   1,
+    "part2_class_imbalance.primary_metric":    1,
+    "part2_class_imbalance.minority_classes":  1,
+
+    "part3_split.split_method":    1,
+    "part3_split.train_size":      1,
+    "part3_split.test_size_count": 1,
+
+    "part4_baseline.n_baseline_models":      2,
+    "part4_baseline.best_baseline_model":    2,
+    "part4_baseline.best_baseline_macro_f1": 4,
+
+    "part5_imbalance_treatment.best_strategy_macro_f1": 5,
+    "part5_imbalance_treatment.best_minority_macro_f1": 5,
+
+    "part6_steel_type_bias.with_steel_type_macro_f1":    3,
+    "part6_steel_type_bias.without_steel_type_macro_f1": 3,
+    "part6_steel_type_bias.performance_drop":            4,
+
+    "part7_two_stage.stage1_binary_f1":       3,
+    "part7_two_stage.two_stage_macro_f1":     5,
+    "part7_two_stage.direct_7class_macro_f1": 3,
+
+    "part8_cost.lowest_cost_model":                     3,
+    "part8_cost.lowest_total_cost":                     4,
+    "part8_cost.is_lowest_cost_same_as_macro_f1_best":  2,
+
+    "part9_interpretability.top1_feature":  2,
+    "part9_interpretability.top3_features": 2,
+
+    "part10_robustness.cv_macro_f1_mean": 3,
+    "part10_robustness.cv_macro_f1_std":  2
+  },
+
+  "scoring": {
+    "part1_data_audit.n_samples":            { "type": "exact_number", "gt": 1941 },
+    "part1_data_audit.n_features":           { "type": "exact_number", "gt": 27 },
+    "part1_data_audit.n_label_columns":      { "type": "exact_number", "gt": 7 },
+    "part1_data_audit.n_classes":            { "type": "exact_number", "gt": 7 },
+    "part1_data_audit.missing_values_total": { "type": "exact_number", "gt": 0 },
+    "part1_data_audit.duplicate_rows":       { "type": "exact_number", "gt": 0 },
+    "part1_data_audit.label_leakage_prevented": { "type": "bool", "gt": true },
+
+    "part2_class_imbalance.majority_class":  { "type": "enum", "allowed": ["Other_Faults"] },
+    "part2_class_imbalance.minority_class":  { "type": "enum", "allowed": ["Dirtiness"] },
+    "part2_class_imbalance.majority_count":  { "type": "exact_number", "gt": 673 },
+    "part2_class_imbalance.minority_count":  { "type": "exact_number", "gt": 55 },
+    "part2_class_imbalance.imbalance_ratio": { "type": "graded", "gt": 12.2364, "levels": [{"abs": 0.1, "score": 1.0}, {"abs": 0.3, "score": 0.5}] },
+    "part2_class_imbalance.primary_metric":  { "type": "enum", "allowed": ["macro_f1"] },
+    "part2_class_imbalance.minority_classes":{ "type": "list_set", "gt": ["Stains", "Dirtiness"] },
+
+    "part3_split.split_method":    { "type": "enum", "allowed": ["stratified_train_test_split"] },
+    "part3_split.train_size":      { "type": "exact_number", "gt": 1552 },
+    "part3_split.test_size_count": { "type": "exact_number", "gt": 389 },
+
+    "part4_baseline.n_baseline_models":      { "type": "min_threshold", "levels": [{"min": 4, "score": 1.0}] },
+    "part4_baseline.best_baseline_model":    { "type": "enum", "allowed": ["RandomForest", "ExtraTrees", "HistGradientBoosting", "RandomForestClassifier", "ExtraTreesClassifier", "HistGradientBoostingClassifier"] },
+    "part4_baseline.best_baseline_macro_f1": { "type": "min_threshold", "levels": [{"min": 0.78, "score": 1.0}, {"min": 0.72, "score": 0.5}] },
+
+    "part5_imbalance_treatment.best_strategy_macro_f1": { "type": "min_threshold", "levels": [{"min": 0.80, "score": 1.0}, {"min": 0.74, "score": 0.5}] },
+    "part5_imbalance_treatment.best_minority_macro_f1": { "type": "min_threshold", "levels": [{"min": 0.80, "score": 1.0}, {"min": 0.70, "score": 0.5}] },
+
+    "part6_steel_type_bias.with_steel_type_macro_f1":    { "type": "min_threshold", "levels": [{"min": 0.78, "score": 1.0}, {"min": 0.72, "score": 0.5}] },
+    "part6_steel_type_bias.without_steel_type_macro_f1": { "type": "min_threshold", "levels": [{"min": 0.75, "score": 1.0}, {"min": 0.69, "score": 0.5}] },
+    "part6_steel_type_bias.performance_drop":            { "type": "max_threshold", "levels": [{"max": 0.05, "score": 1.0}, {"max": 0.10, "score": 0.5}] },
+
+    "part7_two_stage.stage1_binary_f1":       { "type": "min_threshold", "levels": [{"min": 0.62, "score": 1.0}, {"min": 0.55, "score": 0.5}] },
+    "part7_two_stage.two_stage_macro_f1":     { "type": "min_threshold", "levels": [{"min": 0.72, "score": 1.0}, {"min": 0.66, "score": 0.5}] },
+    "part7_two_stage.direct_7class_macro_f1": { "type": "min_threshold", "levels": [{"min": 0.78, "score": 1.0}, {"min": 0.72, "score": 0.5}] },
+
+    "part8_cost.lowest_cost_model":                    { "type": "enum", "allowed": ["two_stage", "RandomForest_oversampling", "RandomForest", "RandomForest_random_oversampling"] },
+    "part8_cost.lowest_total_cost":                    { "type": "max_threshold", "levels": [{"max": 220, "score": 1.0}, {"max": 320, "score": 0.5}] },
+    "part8_cost.is_lowest_cost_same_as_macro_f1_best": { "type": "bool", "gt": false },
+
+    "part9_interpretability.top1_feature":  { "type": "enum", "allowed": ["Length_of_Conveyer", "Pixels_Areas", "Sum_of_Luminosity", "LogOfAreas", "Steel_Plate_Thickness"] },
+    "part9_interpretability.top3_features": { "type": "list_set", "gt": ["Length_of_Conveyer", "Pixels_Areas", "LogOfAreas"] },
+
+    "part10_robustness.cv_macro_f1_mean": { "type": "min_threshold", "levels": [{"min": 0.76, "score": 1.0}, {"min": 0.70, "score": 0.5}] },
+    "part10_robustness.cv_macro_f1_std":  { "type": "max_threshold", "levels": [{"max": 0.03, "score": 1.0}, {"max": 0.06, "score": 0.5}] }
+  },
+
+  "capability_map": {
+    "part1_data_audit.n_samples":            ["data_cleaning"],
+    "part1_data_audit.n_features":           ["data_cleaning"],
+    "part1_data_audit.n_label_columns":      ["data_cleaning"],
+    "part1_data_audit.n_classes":            ["data_cleaning"],
+    "part1_data_audit.missing_values_total": ["data_cleaning", "missing_data_handling"],
+    "part1_data_audit.duplicate_rows":       ["data_cleaning"],
+    "part1_data_audit.label_leakage_prevented": ["feature_engineering", "model_evaluation"],
+
+    "part2_class_imbalance.majority_class":    ["exploratory_analysis"],
+    "part2_class_imbalance.minority_class":    ["exploratory_analysis"],
+    "part2_class_imbalance.majority_count":    ["descriptive_statistics"],
+    "part2_class_imbalance.minority_count":    ["descriptive_statistics"],
+    "part2_class_imbalance.imbalance_ratio":   ["descriptive_statistics", "result_interpretation"],
+    "part2_class_imbalance.primary_metric":    ["model_evaluation", "result_interpretation"],
+    "part2_class_imbalance.minority_classes":  ["exploratory_analysis"],
+
+    "part3_split.split_method":    ["model_evaluation"],
+    "part3_split.train_size":      ["model_evaluation"],
+    "part3_split.test_size_count": ["model_evaluation"],
+
+    "part4_baseline.n_baseline_models":      ["classification", "model_evaluation"],
+    "part4_baseline.best_baseline_model":    ["classification", "model_evaluation"],
+    "part4_baseline.best_baseline_macro_f1": ["classification", "model_evaluation"],
+
+    "part5_imbalance_treatment.best_strategy_macro_f1": ["classification", "model_evaluation"],
+    "part5_imbalance_treatment.best_minority_macro_f1": ["classification", "model_evaluation"],
+
+    "part6_steel_type_bias.with_steel_type_macro_f1":    ["classification", "result_interpretation"],
+    "part6_steel_type_bias.without_steel_type_macro_f1": ["classification", "result_interpretation"],
+    "part6_steel_type_bias.performance_drop":            ["result_interpretation"],
+
+    "part7_two_stage.stage1_binary_f1":       ["classification", "model_evaluation"],
+    "part7_two_stage.two_stage_macro_f1":     ["classification", "model_evaluation"],
+    "part7_two_stage.direct_7class_macro_f1": ["classification", "model_evaluation"],
+
+    "part8_cost.lowest_cost_model":                    ["model_evaluation", "result_interpretation"],
+    "part8_cost.lowest_total_cost":                    ["model_evaluation"],
+    "part8_cost.is_lowest_cost_same_as_macro_f1_best": ["result_interpretation"],
+
+    "part9_interpretability.top1_feature":  ["feature_engineering", "result_interpretation"],
+    "part9_interpretability.top3_features": ["feature_engineering", "result_interpretation"],
+
+    "part10_robustness.cv_macro_f1_mean": ["model_evaluation"],
+    "part10_robustness.cv_macro_f1_std":  ["model_evaluation"]
+  },
+
+  "pytest_weight_map": {
+    "test_outcome_json_exists":              1,
+    "test_outcome_is_json_serializable":     1,
+    "test_outcome_has_all_ten_parts":        2,
+    "test_split_sizes_sum_to_total":         2,
+    "test_baseline_count_at_least_four":     1,
+    "test_metrics_in_unit_range":            2,
+    "test_label_leakage_flag_and_feature_count": 3,
+    "test_counts_are_nonnegative":           1
+  },
+
+  "veto": {
+    "essential": ["part1_data_audit.label_leakage_prevented"],
+    "unacceptable": [],
+    "_comment": "essential: training with the seven label columns as features (leakage) inflates every downstream metric; a solution that does not prevent leakage has its combined_score zeroed at the aggregate layer. Applies cross-task only; single-run scorer still credits the raw sub-score."
+  },
+
+  "factoid_alpha": 0.85
+}

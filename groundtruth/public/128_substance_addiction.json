@@ -1,0 +1,176 @@
+{
+  "task_id": "128_substance_addiction",
+  "difficulty": "hard",
+  "notes": "Physically isolated from tasks/ — the agent never sees this file. Leaf fields distilled from the original 54-checkpoint rubric to a factoid-friendly subset spanning all 5 parts.",
+
+  "values": {
+    "part1_data_quality": {
+      "row_count": 3000,
+      "column_count": 25,
+      "education_missing_count": 420,
+      "social_support_missing_count": 753,
+      "therapy_history_missing_count": 1014
+    },
+    "part2_demographics": {
+      "gender_female_count": 1017,
+      "gender_male_count": 959,
+      "gender_other_count": 1024,
+      "age_bin_under25_count": 462,
+      "age_bin_25_40_count": 721,
+      "age_bin_40_60_count": 905,
+      "age_bin_60plus_count": 912,
+      "avg_smokes_per_day_overall": 10.03,
+      "avg_drinks_per_week_overall": 5.00
+    },
+    "part3_health_lifestyle": {
+      "highest_health_issue_group_mental": "Poor",
+      "highest_health_issue_group_exercise": "Never",
+      "avg_bmi_diet_poor": 25.15,
+      "avg_sleep_hours_mental_poor": 6.51
+    },
+    "part4_addiction_patterns": {
+      "smoking_prevalence_pct": 100.0,
+      "drinking_prevalence_pct": 99.33,
+      "therapy_history_current_count": 976,
+      "therapy_history_past_count": 1010
+    },
+    "part5_health_model": {
+      "high_risk_positive_count": 113,
+      "train_size": 1800,
+      "validation_size": 600,
+      "test_size": 600,
+      "best_model_type": "RandomForestClassifier",
+      "test_auc": 0.9767,
+      "top10pct_capture_rate_pct": 91.3,
+      "seed_stability_auc_mean": 0.9721
+    }
+  },
+
+  "weights": {
+    "part1_data_quality.row_count":                     1,
+    "part1_data_quality.column_count":                  1,
+    "part1_data_quality.education_missing_count":       1,
+    "part1_data_quality.social_support_missing_count":  1,
+    "part1_data_quality.therapy_history_missing_count": 1,
+
+    "part2_demographics.gender_female_count":           1,
+    "part2_demographics.gender_male_count":             1,
+    "part2_demographics.gender_other_count":            1,
+    "part2_demographics.age_bin_under25_count":         1,
+    "part2_demographics.age_bin_25_40_count":           1,
+    "part2_demographics.age_bin_40_60_count":           1,
+    "part2_demographics.age_bin_60plus_count":          1,
+    "part2_demographics.avg_smokes_per_day_overall":    1,
+    "part2_demographics.avg_drinks_per_week_overall":   1,
+
+    "part3_health_lifestyle.highest_health_issue_group_mental":   2,
+    "part3_health_lifestyle.highest_health_issue_group_exercise": 2,
+    "part3_health_lifestyle.avg_bmi_diet_poor":                   1,
+    "part3_health_lifestyle.avg_sleep_hours_mental_poor":         1,
+
+    "part4_addiction_patterns.smoking_prevalence_pct":        2,
+    "part4_addiction_patterns.drinking_prevalence_pct":       2,
+    "part4_addiction_patterns.therapy_history_current_count": 1,
+    "part4_addiction_patterns.therapy_history_past_count":    1,
+
+    "part5_health_model.high_risk_positive_count":  3,
+    "part5_health_model.train_size":                1,
+    "part5_health_model.validation_size":           1,
+    "part5_health_model.test_size":                 1,
+    "part5_health_model.best_model_type":           4,
+    "part5_health_model.test_auc":                  6,
+    "part5_health_model.top10pct_capture_rate_pct": 4,
+    "part5_health_model.seed_stability_auc_mean":   4
+  },
+
+  "scoring": {
+    "part1_data_quality.row_count":                     { "type": "exact_number", "gt": 3000 },
+    "part1_data_quality.column_count":                  { "type": "exact_number", "gt": 25 },
+    "part1_data_quality.education_missing_count":       { "type": "exact_number", "gt": 420 },
+    "part1_data_quality.social_support_missing_count":  { "type": "exact_number", "gt": 753 },
+    "part1_data_quality.therapy_history_missing_count": { "type": "exact_number", "gt": 1014 },
+
+    "part2_demographics.gender_female_count":  { "type": "exact_number", "gt": 1017 },
+    "part2_demographics.gender_male_count":    { "type": "exact_number", "gt": 959 },
+    "part2_demographics.gender_other_count":   { "type": "exact_number", "gt": 1024 },
+    "part2_demographics.age_bin_under25_count":{ "type": "exact_number", "gt": 462 },
+    "part2_demographics.age_bin_25_40_count":  { "type": "exact_number", "gt": 721 },
+    "part2_demographics.age_bin_40_60_count":  { "type": "exact_number", "gt": 905 },
+    "part2_demographics.age_bin_60plus_count": { "type": "exact_number", "gt": 912 },
+    "part2_demographics.avg_smokes_per_day_overall":  { "type": "graded", "gt": 10.03, "levels": [{"abs": 0.05, "score": 1.0}, {"abs": 0.20, "score": 0.5}] },
+    "part2_demographics.avg_drinks_per_week_overall": { "type": "graded", "gt": 5.00,  "levels": [{"abs": 0.05, "score": 1.0}, {"abs": 0.20, "score": 0.5}] },
+
+    "part3_health_lifestyle.highest_health_issue_group_mental":   { "type": "enum", "allowed": ["Poor"] },
+    "part3_health_lifestyle.highest_health_issue_group_exercise": { "type": "enum", "allowed": ["Never"] },
+    "part3_health_lifestyle.avg_bmi_diet_poor":                   { "type": "graded", "gt": 25.15, "levels": [{"abs": 0.20, "score": 1.0}, {"abs": 0.80, "score": 0.5}] },
+    "part3_health_lifestyle.avg_sleep_hours_mental_poor":         { "type": "graded", "gt": 6.51,  "levels": [{"abs": 0.10, "score": 1.0}, {"abs": 0.30, "score": 0.5}] },
+
+    "part4_addiction_patterns.smoking_prevalence_pct":         { "type": "graded", "gt": 100.0, "levels": [{"abs": 0.5, "score": 1.0}, {"abs": 2.0, "score": 0.5}] },
+    "part4_addiction_patterns.drinking_prevalence_pct":        { "type": "graded", "gt": 99.33, "levels": [{"abs": 0.5, "score": 1.0}, {"abs": 2.0, "score": 0.5}] },
+    "part4_addiction_patterns.therapy_history_current_count":  { "type": "graded", "gt": 976,   "levels": [{"abs": 5, "score": 1.0}, {"abs": 25, "score": 0.5}] },
+    "part4_addiction_patterns.therapy_history_past_count":     { "type": "graded", "gt": 1010,  "levels": [{"abs": 5, "score": 1.0}, {"abs": 25, "score": 0.5}] },
+
+    "part5_health_model.high_risk_positive_count":  { "type": "graded", "gt": 113, "levels": [{"abs": 5, "score": 1.0}, {"abs": 15, "score": 0.5}] },
+    "part5_health_model.train_size":                { "type": "exact_number", "gt": 1800 },
+    "part5_health_model.validation_size":           { "type": "exact_number", "gt": 600 },
+    "part5_health_model.test_size":                 { "type": "exact_number", "gt": 600 },
+    "part5_health_model.best_model_type":           { "type": "enum", "allowed": ["RandomForestClassifier"] },
+    "part5_health_model.test_auc":                  { "type": "min_threshold", "levels": [{"min": 0.95, "score": 1.0}, {"min": 0.90, "score": 0.6}, {"min": 0.80, "score": 0.3}] },
+    "part5_health_model.top10pct_capture_rate_pct": { "type": "min_threshold", "levels": [{"min": 85.0, "score": 1.0}, {"min": 70.0, "score": 0.6}, {"min": 50.0, "score": 0.3}] },
+    "part5_health_model.seed_stability_auc_mean":   { "type": "min_threshold", "levels": [{"min": 0.95, "score": 1.0}, {"min": 0.90, "score": 0.6}, {"min": 0.80, "score": 0.3}] }
+  },
+
+  "capability_map": {
+    "part1_data_quality.row_count":                     ["data_cleaning"],
+    "part1_data_quality.column_count":                  ["data_cleaning"],
+    "part1_data_quality.education_missing_count":       ["missing_data_handling"],
+    "part1_data_quality.social_support_missing_count":  ["missing_data_handling"],
+    "part1_data_quality.therapy_history_missing_count": ["missing_data_handling"],
+
+    "part2_demographics.gender_female_count":           ["descriptive_statistics"],
+    "part2_demographics.gender_male_count":             ["descriptive_statistics"],
+    "part2_demographics.gender_other_count":            ["descriptive_statistics"],
+    "part2_demographics.age_bin_under25_count":         ["descriptive_statistics"],
+    "part2_demographics.age_bin_25_40_count":           ["descriptive_statistics"],
+    "part2_demographics.age_bin_40_60_count":           ["descriptive_statistics"],
+    "part2_demographics.age_bin_60plus_count":          ["descriptive_statistics"],
+    "part2_demographics.avg_smokes_per_day_overall":    ["descriptive_statistics"],
+    "part2_demographics.avg_drinks_per_week_overall":   ["descriptive_statistics"],
+
+    "part3_health_lifestyle.highest_health_issue_group_mental":   ["exploratory_analysis", "result_interpretation"],
+    "part3_health_lifestyle.highest_health_issue_group_exercise": ["exploratory_analysis", "result_interpretation"],
+    "part3_health_lifestyle.avg_bmi_diet_poor":                   ["descriptive_statistics"],
+    "part3_health_lifestyle.avg_sleep_hours_mental_poor":         ["descriptive_statistics"],
+
+    "part4_addiction_patterns.smoking_prevalence_pct":         ["descriptive_statistics"],
+    "part4_addiction_patterns.drinking_prevalence_pct":        ["descriptive_statistics"],
+    "part4_addiction_patterns.therapy_history_current_count":  ["descriptive_statistics"],
+    "part4_addiction_patterns.therapy_history_past_count":     ["descriptive_statistics"],
+
+    "part5_health_model.high_risk_positive_count":  ["feature_engineering"],
+    "part5_health_model.train_size":                ["model_evaluation"],
+    "part5_health_model.validation_size":           ["model_evaluation"],
+    "part5_health_model.test_size":                 ["model_evaluation"],
+    "part5_health_model.best_model_type":           ["classification", "model_evaluation"],
+    "part5_health_model.test_auc":                  ["classification", "model_evaluation"],
+    "part5_health_model.top10pct_capture_rate_pct": ["classification", "model_evaluation"],
+    "part5_health_model.seed_stability_auc_mean":   ["classification", "model_evaluation"]
+  },
+
+  "pytest_weight_map": {
+    "test_outcome_json_exists":                1,
+    "test_outcome_is_json_serializable":       1,
+    "test_outcome_has_all_five_parts":         2,
+    "test_percentages_in_valid_range":         1,
+    "test_split_sizes_sum_to_total":           1,
+    "test_best_model_in_allowed_set":          1
+  },
+
+  "veto": {
+    "essential": ["part5_health_model.best_model_type"],
+    "unacceptable": [],
+    "_comment": "essential: picking the wrong model family means the entire modeling report is misleading; zeroed at the aggregate layer. Applies only cross-task; single-run scorer.py still credits the raw sub-score."
+  },
+
+  "factoid_alpha": 0.9
+}

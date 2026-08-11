@@ -1,0 +1,50 @@
+# Model configurations for the HTTP-API agent adapter.
+#
+# All entries are OpenAI-compatible chat completion endpoints. API keys are
+# read from environment variables (never committed to git).
+#
+# Design decision: cross-model fair comparison uses ONE harness (HttpApiAgent)
+# for all models. Native CLIs (Claude Code / Codex CLI / Gemini CLI) can be
+# added later as separate `agent_type` entries for ceiling-mode evaluation.
+
+models:
+  - name: claude-sonnet-4.5
+    api_base: https://api.anthropic.com/v1
+    api_key_env: ANTHROPIC_API_KEY
+    model_id: claude-sonnet-4-5
+    temperature: 0.0
+    max_tokens: 8192
+
+  - name: gpt-5
+    api_base: https://api.openai.com/v1
+    api_key_env: OPENAI_API_KEY
+    model_id: gpt-5
+    temperature: 0.0
+    max_tokens: 8192
+
+  - name: gemini-3-pro
+    api_base: https://generativelanguage.googleapis.com/v1
+    api_key_env: GOOGLE_API_KEY
+    model_id: gemini-3-pro
+    temperature: 0.0
+    max_tokens: 8192
+
+  - name: deepseek-v3
+    api_base: https://api.deepseek.com/v1
+    api_key_env: DEEPSEEK_API_KEY
+    model_id: deepseek-chat
+    temperature: 0.0
+    max_tokens: 8192
+
+  - name: kimi-k2
+    api_base: https://api.moonshot.cn/v1
+    api_key_env: MOONSHOT_API_KEY
+    model_id: moonshot-v1-128k
+    temperature: 0.0
+    max_tokens: 8192
+
+# Optional local-vllm entry (v2 phase)
+# - name: qwen3-72b-local
+#   api_base: http://localhost:8000/v1
+#   api_key_env: LOCAL_VLLM_KEY
+#   model_id: Qwen/Qwen3-72B-Instruct

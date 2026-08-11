@@ -1,0 +1,29 @@
+{
+  "$schema": "harbor-registry-v1",
+  "dataset_id": "data-analysis-bench",
+  "version": "1.0",
+  "release_date": "2026-07-30",
+  "description": "Data Analysis AgentBench v1.0 — 20 tasks covering medical / demography / social stats / time-series / regression-causal / EDA / hypothesis testing. Extreme tier reserves future headroom.",
+  "difficulty_distribution": {
+    "easy": 8,
+    "hard": 9,
+    "extreme": 3
+  },
+  "tasks": [
+    {
+      "task_id": "159_gaokao_reform",
+      "path": "tasks/social_stats/159_gaokao_reform",
+      "difficulty": "extreme",
+      "scenario": "social_stats",
+      "image": "bench-social:v1",
+      "status": "active",
+      "added_in": "1.0",
+      "groundtruth": "groundtruth/public/159_gaokao_reform.json",
+      "notes": "Sample flagship — 5-part end-to-end analysis with capability-level attribution"
+    }
+  ],
+  "hidden_tasks": [],
+  "changelog": {
+    "1.0": "Initial release with 1 sample task (159_gaokao_reform). Framework layer + docker + scoring protocol established."
+  }
+}
