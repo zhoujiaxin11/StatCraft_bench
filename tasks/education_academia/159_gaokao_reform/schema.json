@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "159_gaokao_reform answer schema",
+  "description": "Field definitions for the agent's outcome.json. Only shape and types are given here — no ground-truth values.",
+  "type": "object",
+  "properties": {
+    "part1_overview": {
+      "type": "object",
+      "properties": {
+        "total_records": {"type": "integer"},
+        "province_count": {"type": "integer"},
+        "year_min": {"type": "integer"},
+        "year_max": {"type": "integer"},
+        "cleaned_records": {"type": "integer"},
+        "missing_count": {"type": "integer"},
+        "anomaly_notes": {"type": "string"},
+        "mode_distribution": {
+          "type": "object",
+          "description": "Map of mode name → record count (post-cleaning)"
+        }
+      },
+      "required": ["total_records", "province_count", "year_min", "year_max"]
+    },
+    "part2_reform_impact": {
+      "type": "object",
+      "properties": {
+        "province_analyzed": {"type": "string"},
+        "selection_basis": {"type": "string"},
+        "old_physics_liberal_ratio": {"type": "number", "description": "Old-regime: physics/liberal ratio (or理科/文科)"},
+        "new_physics_history_ratio": {"type": "number", "description": "New-regime: physics-class/history-class ratio"},
+        "high_score_above_600_old": {"type": "integer"},
+        "high_score_above_600_new": {"type": "integer"},
+        "weighted_mean_old": {"type": "number"},
+        "weighted_mean_new": {"type": "number"},
+        "std_old": {"type": "number"},
+        "std_new": {"type": "number"},
+        "reform_direction": {
+          "type": "object",
+          "description": "Direction of change post-vs-pre reform under matched-cohort criteria",
+          "properties": {
+            "mean": {"type": "string", "enum": ["up", "down", "flat"]},
+            "std": {"type": "string", "enum": ["up", "down", "flat"]},
+            "high_score_share": {"type": "string", "enum": ["up", "down", "flat"]}
+          },
+          "required": ["mean", "std", "high_score_share"]
+        },
+        "reform_timeline": {
+          "type": "object",
+          "description": "Year → { provinces: N, records: M } summarizing new-regime rollout"
+        },
+        "key_findings": {"type": "string"}
+      }
+    },
+    "part3_model": {
+      "type": "object",
+      "properties": {
+        "model_type": {"type": "string"},
+        "feature_count": {"type": "integer"},
+        "feature_names": {"type": "array", "items": {"type": "string"}},
+        "train_size": {"type": "integer"},
+        "test_size": {"type": "integer"},
+        "test_years": {"type": "array", "items": {"type": "integer"}},
+        "R2": {"type": "number"},
+        "RMSE": {"type": "number"},
+        "MAE": {"type": "number"},
+        "top_features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature": {"type": "string"},
+              "importance": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "part4_causal": {
+      "type": "object",
+      "properties": {
+        "method": {"type": "string", "description": "Free-form description of the causal methods used"},
+        "treated_provinces": {"type": "array", "items": {"type": "string"}},
+        "control_provinces": {"type": "array", "items": {"type": "string"}},
+        "did_effect": {"type": "number"},
+        "scm_effect": {"type": "number"},
+        "placebo_time_effect": {"type": "number"},
+        "placebo_treat_effect": {"type": "number"},
+        "sensitivity_min": {"type": "number"},
+        "sensitivity_max": {"type": "number"},
+        "consistency": {"type": "boolean"},
+        "parallel_trend_diff": {"type": "number"},
+        "parallel_trend_pvalue": {"type": "number"}
+      }
+    },
+    "part5_advanced": {
+      "type": "object",
+      "properties": {
+        "tail_index_method": {"type": "string"},
+        "tail_index_value": {"type": "number"},
+        "panel_ols_coefs": {
+          "type": "object",
+          "description": "Map of coef name → { coef, se, t, p }",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "coef": {"type": "number"},
+              "se": {"type": "number"},
+              "t": {"type": "number"},
+              "p": {"type": "number"}
+            }
+          }
+        },
+        "distribution_distance": {"type": "number", "description": "Some measure (e.g. Wasserstein) of pre/post reform分布 shift"},
+        "conformal_target_coverage": {"type": "number"},
+        "conformal_empirical_coverage": {"type": "number"},
+        "conformal_mean_width": {"type": "number"}
+      }
+    }
+  }
+}

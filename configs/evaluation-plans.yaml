@@ -1,0 +1,61 @@
+# Evaluation plans — layered execution strategy at scale.
+#
+# Rationale
+# ---------
+# With v1 = 20 tasks and future = several-hundred tasks, running everything
+# every time is prohibitively expensive. Different pipelines run different
+# subsets at different frequencies.
+
+plans:
+
+  # Fast smoke test: verify infrastructure (harness / scorer / docker) works.
+  # Run on every framework PR.
+  smoke:
+    description: "Minimal sanity check on framework layer"
+    tasks: []                        # populated by --tag=smoke
+    tags: ["smoke"]
+    models: ["deepseek-v3"]          # cheapest model
+    seeds: 1
+    concurrency: 4
+
+  # Sample evaluation: representative subset from each scenario.
+  # Run nightly to track drift.
+  sample:
+    description: "Nightly trend monitor across scenarios"
+    tasks_per_scenario: 3
+    tags: ["easy", "hard"]           # skip extreme in sample
+    models: ["claude-sonnet-4.5", "gpt-5", "deepseek-v3"]
+    seeds: 3
+    concurrency: 8
+
+  # Full evaluation: all active tasks in the registry.
+  # Run monthly or before public release.
+  full:
+    description: "Full leaderboard evaluation"
+    registry_version: "1.0"
+    all_active_tasks: true
+    models:
+      - claude-sonnet-4.5
+      - gpt-5
+      - gemini-3-pro
+      - deepseek-v3
+      - kimi-k2
+    seeds: 5
+    concurrency: 16
+    env: "local"                     # switch to "daytona" when task count > 100
+
+  # Hidden-set evaluation: contamination detection.
+  # Run quarterly. Ground truth for hidden set is encrypted / not in git.
+  hidden:
+    description: "Hidden test set for contamination check"
+    registry_version: "1.0"
+    all_hidden_tasks: true
+    models:
+      - claude-sonnet-4.5
+      - gpt-5
+      - gemini-3-pro
+      - deepseek-v3
+      - kimi-k2
+    seeds: 5
+    concurrency: 16
+    env: "daytona"

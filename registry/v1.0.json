@@ -1,0 +1,29 @@
+{
+  "$schema": "harbor-registry-v1",
+  "dataset_id": "data-analysis-bench",
+  "version": "1.0",
+  "release_date": "2026-07-30",
+  "description": "Data Analysis AgentBench v1.0 — 1 sample task (159_gaokao_reform) shipped as the framework's flagship reference. More tasks across the 12 scenarios (medical_health / finance_economics / retail_ecommerce / industrial_energy / transport_logistics / environment_climate / geo_hazards / education_academia / society_policy / tech_internet / sports_entertainment / bio_chem_materials) will land in follow-up releases.",
+  "difficulty_distribution": {
+    "easy": 0,
+    "hard": 0,
+    "extreme": 1
+  },
+  "tasks": [
+    {
+      "task_id": "159_gaokao_reform",
+      "path": "tasks/education_academia/159_gaokao_reform",
+      "difficulty": "extreme",
+      "scenario": "education_academia",
+      "image": "bench-social:v1",
+      "status": "active",
+      "added_in": "1.0",
+      "groundtruth": "groundtruth/public/159_gaokao_reform.json",
+      "notes": "Sample flagship — 5-part end-to-end analysis with capability-level attribution"
+    }
+  ],
+  "hidden_tasks": [],
+  "changelog": {
+    "1.0": "Initial release with 1 sample task (159_gaokao_reform). Framework layer + docker + scoring protocol established."
+  }
+}

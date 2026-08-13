@@ -1,0 +1,145 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # L1: structural — file/TOML/JSON validity, registry ↔ tasks/ two-way
+  # consistency, difficulty-distribution honesty. Runs in seconds; catches
+  # the "20 tasks in the description but 1 on disk" drift before any of the
+  # heavier jobs waste a minute.
+  L1-structure:
+    name: L1 · structure
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: framework.ci_validate --structure
+        run: python3 -m framework.ci_validate --structure
+
+  # L2: semantic — scenario/difficulty whitelist, capability vocabulary,
+  # veto sanity, scoring rule types, plus the pytest suite and the
+  # instruction.md leakage grep from TASK_AUTHORING.md §五.
+  L2-content:
+    name: L2 · content & docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: L1-structure
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install runtime deps for pytest
+        run: |
+          python3 -m pip install --upgrade pip
+          # Only the deps the framework layer + tests actually import at
+          # collection/import time. Heavier scientific stack lives in the
+          # docker image and only L3's oracle run needs it.
+          python3 -m pip install pytest tomli 'numpy<3' 'pandas>=2,<3'
+
+      - name: framework.ci_validate --content
+        run: python3 -m framework.ci_validate --content
+
+      - name: pytest
+        run: python3 -m pytest -q
+
+      - name: instruction.md leakage scan
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(find tasks -mindepth 3 -maxdepth 3 -name instruction.md | sort)
+          if (( ${#files[@]} == 0 )); then
+            echo "::error::no tasks/*/*/instruction.md found — layout is wrong"
+            exit 1
+          fi
+          # Forbidden substrings from TASK_AUTHORING.md §五 (both half-width
+          # and full-width colon variants); grep -F is deliberate — these are
+          # substrings, not regexes, and we don't want false positives on
+          # punctuation-adjacent occurrences.
+          patterns=(
+            "groundtruth"
+            "ground truth"
+            "真值"
+            "标准答案"
+            "控制组:"
+            "控制组："
+            "处理组:"
+            "处理组："
+            "权重 = "
+            "权重＝"
+          )
+          hit=0
+          for p in "${patterns[@]}"; do
+            if grep -Hn -F -- "$p" "${files[@]}"; then
+              hit=1
+            fi
+          done
+          if (( hit )); then
+            echo "::error::instruction.md leaked a forbidden term (see matches above)"
+            exit 1
+          fi
+
+  # L3: runtime — one oracle-must-pass invocation per task on disk. This is
+  # the slowest gate; it needs the domain deps that only ship inside the
+  # docker image, so we install a superset here rather than build the image
+  # (image builds are 15+ min and would dominate CI time).
+  L3-oracle-gate:
+    name: L3 · oracle
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    needs: L2-content
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install oracle-runtime deps
+        run: |
+          python3 -m pip install --upgrade pip
+          # This mirrors what the social/base Dockerfiles install. Locked
+          # loosely because the oracle just needs the calls to succeed;
+          # numeric-tolerance is enforced by scorer.py's "graded" levels.
+          python3 -m pip install \
+            'numpy<3' 'pandas>=2,<3' 'scipy>=1.11,<2' 'scikit-learn>=1.4,<2' \
+            'statsmodels>=0.14,<1' pytest tomli
+
+      - name: oracle ≥ 0.99
+        run: |
+          set -euo pipefail
+          failed=0
+          total=0
+          # Walk tasks/<scenario>/<task_id>/. The task marker is task.toml,
+          # not the folder name, so we discover the list from disk rather
+          # than hard-coding a static list (that list would drift).
+          while IFS= read -r -d '' toml; do
+            task_dir=$(dirname "$toml")
+            slug=${task_dir#tasks/}     # e.g. education_academia/159_gaokao_reform
+            total=$(( total + 1 ))
+            echo "::group::$slug"
+            if ! python3 -m framework.runner --task "$task_dir" --agent oracle --check-oracle; then
+              echo "::error::oracle gate failed: $slug"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done < <(find tasks -mindepth 3 -maxdepth 3 -name task.toml -print0 | sort -z)
+
+          if [ "$total" -eq 0 ]; then
+            echo "::error::no tasks under tasks/ — nothing to gate"
+            exit 1
+          fi
+          echo "walked $total task(s); exit $failed"
+          exit "$failed"

@@ -1,0 +1,48 @@
+[task]
+id = "159_gaokao_reform"
+title = "全国高考分数分布——改革影响、位次预测与因果推断"
+
+[taxonomy]
+scenario = "education_academia"
+subscenario = "education_reform_analysis"
+difficulty = "extreme"                 # Easy / Hard / Extreme
+version = "v1.0"
+
+# Capability tags (used for per-capability attribution in scorer.py)
+capabilities = [
+  "data_cleaning",
+  "weighted_statistics",
+  "grouped_comparison",
+  "time_series_features",
+  "leakage_prevention",
+  "regression_modeling",
+  "did_estimation",
+  "synthetic_control",
+  "placebo_test",
+  "parallel_trend_test",
+  "evt_tail_index",
+  "panel_ols_inference",
+  "wasserstein_distance",
+  "conformal_prediction",
+]
+
+[environment]
+image = "bench-social:v1"              # Domain image; not per-task Dockerfile
+
+[resources]
+wall_timeout = 900                     # consumed by runner.py watchdog as real wall-clock cap
+max_turns = 50
+memory_gb = 8
+cpus = 4
+
+[required_outputs]
+# Files agent must produce in workspace (checked by pytest, small weight)
+files = [
+  "outcome.json",                      # Primary factoid answer
+  "output/predictions.csv",            # Part3 test-set predictions
+]
+
+[scoring]
+# High-level scoring hints (real weights live in groundtruth JSON)
+factoid_alpha = 0.9                    # 90% factoid, 10% artifact pytest
+pass_threshold = 0.3                   # Extreme task: 30% is a passing signal
